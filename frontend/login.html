@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RehabXR — Accès Thérapeute</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #06090f;
+    --bg2: #0c1220;
+    --surface: #111827;
+    --surface2: #161f30;
+    --border: #1e3a5f;
+    --border2: #243650;
+    --accent: #00c2ff;
+    --accent2: #7c3aed;
+    --text: #e8f0fe;
+    --text2: #8baed4;
+    --text3: #4a6785;
+    --danger: #ef4444;
+    --success: #10b981;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    font-family: 'Sora', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* ── Animated background grid ── */
+  .bg-grid {
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,194,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,194,255,0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+    animation: gridMove 20s linear infinite;
+  }
+
+  @keyframes gridMove {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(48px); }
+  }
+
+  /* ── Glows ── */
+  .glow-top {
+    position: fixed;
+    top: -200px; left: 50%;
+    transform: translateX(-50%);
+    width: 800px; height: 500px;
+    background: radial-gradient(ellipse, rgba(0,194,255,0.07) 0%, transparent 65%);
+    pointer-events: none;
+  }
+
+  .glow-left {
+    position: fixed;
+    bottom: 10%; left: -150px;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(124,58,237,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  /* ── Noise ── */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    opacity: 0.35;
+    z-index: 0;
+  }
+
+  /* ── Floating orbs ── */
+  .orb {
+    position: fixed;
+    border-radius: 50%;
+    pointer-events: none;
+    animation: orbFloat 10s ease-in-out infinite;
+  }
+  .orb1 { width: 90px; height: 90px; background: radial-gradient(circle, rgba(0,194,255,0.15), transparent); top: 15%; left: 8%; animation-delay: 0s; }
+  .orb2 { width: 55px; height: 55px; background: radial-gradient(circle, rgba(124,58,237,0.15), transparent); bottom: 20%; right: 10%; animation-delay: 3s; }
+  .orb3 { width: 35px; height: 35px; background: radial-gradient(circle, rgba(16,185,129,0.15), transparent); top: 65%; left: 18%; animation-delay: 6s; }
+
+  @keyframes orbFloat {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-18px) scale(1.05); }
+  }
+
+  /* ── Main card ── */
+  .login-wrapper {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    max-width: 460px;
+    padding: 24px;
+    animation: cardIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  @keyframes cardIn {
+    from { opacity: 0; transform: translateY(32px) scale(0.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  /* Top label */
+  .top-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 28px;
+    animation: fadeDown 0.5s 0.1s ease both;
+  }
+
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .top-label-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--border));
+  }
+
+  .top-label-line.right {
+    background: linear-gradient(to left, transparent, var(--border));
+  }
+
+  .top-label-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text3);
+  }
+
+  /* Card */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 44px 40px 40px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Card inner glow */
+  .card::before {
+    content: '';
+    position: absolute;
+    top: -1px; left: 50%;
+    transform: translateX(-50%);
+    width: 200px; height: 2px;
+    background: linear-gradient(to right, transparent, var(--accent), transparent);
+    opacity: 0.6;
+  }
+
+  .card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 300px; height: 120px;
+    background: radial-gradient(ellipse, rgba(0,194,255,0.04) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  /* Logo area */
+  .logo-area {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    margin-bottom: 8px;
+    position: relative;
+    z-index: 1;
+    animation: fadeInUp 0.5s 0.2s ease both;
+  }
+
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .logo-icon {
+    width: 48px; height: 48px;
+    background: linear-gradient(135deg, var(--accent), #0066cc);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: 800;
+    color: white;
+    letter-spacing: -1px;
+    box-shadow: 0 0 24px rgba(0,194,255,0.25);
+    font-family: 'Sora', sans-serif;
+  }
+
+  .logo-text {
+    font-family: 'DM Serif Display', serif;
+    font-size: 30px;
+    color: white;
+    letter-spacing: -0.5px;
+  }
+
+  .logo-text span { color: var(--accent); }
+
+  /* Subtitle */
+  .card-subtitle {
+    text-align: center;
+    font-size: 13px;
+    color: var(--text3);
+    margin-bottom: 36px;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.5px;
+    position: relative;
+    z-index: 1;
+    animation: fadeInUp 0.5s 0.25s ease both;
+  }
+
+  /* Divider */
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 28px;
+    animation: fadeInUp 0.5s 0.3s ease both;
+    position: relative;
+    z-index: 1;
+  }
+
+  .divider-line { flex: 1; height: 1px; background: var(--border); }
+
+  .divider-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    background: rgba(0,194,255,0.06);
+    border: 1px solid rgba(0,194,255,0.15);
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+
+  .divider-badge::before {
+    content: '';
+    width: 6px; height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(1.4); }
+  }
+
+  /* Input group */
+  .input-group {
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 1;
+    animation: fadeInUp 0.5s 0.35s ease both;
+  }
+
+  .input-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text2);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .input-wrap {
+    position: relative;
+  }
+
+  .input-icon {
+    position: absolute;
+    left: 16px; top: 50%;
+    transform: translateY(-50%);
+    font-size: 16px;
+    pointer-events: none;
+    color: var(--text3);
+    transition: color 0.2s;
+  }
+
+  .password-input {
+    width: 100%;
+    padding: 14px 48px 14px 46px;
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    color: var(--text);
+    font-size: 15px;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 3px;
+    outline: none;
+    transition: all 0.25s;
+  }
+
+  .password-input::placeholder {
+    color: var(--text3);
+    letter-spacing: 2px;
+    font-size: 13px;
+  }
+
+  .password-input:focus {
+    border-color: var(--accent);
+    background: rgba(0,194,255,0.03);
+    box-shadow: 0 0 0 3px rgba(0,194,255,0.08), 0 0 20px rgba(0,194,255,0.06);
+  }
+
+  .password-input:focus + .input-icon-after,
+  .password-input:focus ~ .input-focus-ring { opacity: 1; }
+
+  .input-wrap:focus-within .input-icon { color: var(--accent); }
+
+  /* Eye toggle */
+  .eye-btn {
+    position: absolute;
+    right: 14px; top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    color: var(--text3);
+    padding: 4px;
+    transition: color 0.2s;
+    display: flex;
+    align-items: center;
+  }
+
+  .eye-btn:hover { color: var(--accent); }
+
+  /* Error / success messages */
+  .message {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 18px;
+    animation: shakeIn 0.4s ease;
+    position: relative;
+    z-index: 1;
+  }
+
+  .message.show { display: flex; }
+
+  .message.error {
+    background: rgba(239,68,68,0.08);
+    border: 1px solid rgba(239,68,68,0.2);
+    color: #fca5a5;
+  }
+
+  .message.success {
+    background: rgba(16,185,129,0.08);
+    border: 1px solid rgba(16,185,129,0.2);
+    color: #6ee7b7;
+  }
+
+  @keyframes shakeIn {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-6px); }
+    40% { transform: translateX(6px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(4px); }
+  }
+
+  /* Submit button */
+  .submit-btn {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(135deg, var(--accent), #0077dd);
+    color: #06090f;
+    font-size: 14px;
+    font-weight: 700;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-family: 'Sora', sans-serif;
+    letter-spacing: 0.3px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+    animation: fadeInUp 0.5s 0.4s ease both;
+    box-shadow: 0 4px 24px rgba(0,194,255,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .submit-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .submit-btn:hover::before { opacity: 1; }
+
+  .submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 40px rgba(0,194,255,0.35);
+  }
+
+  .submit-btn:active { transform: translateY(0); }
+
+  .submit-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* Loading spinner */
+  .spinner {
+    display: none;
+    width: 16px; height: 16px;
+    border: 2px solid rgba(6,9,15,0.3);
+    border-top-color: #06090f;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Footer hint */
+  .card-footer {
+    margin-top: 24px;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+    animation: fadeInUp 0.5s 0.45s ease both;
+  }
+
+  .card-footer p {
+    font-size: 11px;
+    color: var(--text3);
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.3px;
+  }
+
+  .card-footer .shield {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 6px;
+    padding: 5px 12px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    font-size: 10px;
+    color: var(--text3);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* Attempts indicator */
+  .attempts {
+    display: none;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 14px;
+    animation: fadeInUp 0.3s ease both;
+    position: relative;
+    z-index: 1;
+  }
+
+  .attempts.show { display: flex; }
+
+  .attempt-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--border);
+    transition: background 0.3s;
+  }
+
+  .attempt-dot.used { background: var(--danger); }
+
+  /* Bottom info */
+  .bottom-info {
+    margin-top: 32px;
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    animation: fadeInUp 0.5s 0.5s ease both;
+  }
+
+  .info-tag {
+    padding: 6px 14px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    font-size: 11px;
+    color: var(--text3);
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.3px;
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="glow-top"></div>
+<div class="glow-left"></div>
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+<div class="orb orb3"></div>
+
+<div class="login-wrapper">
+
+  <!-- Top label -->
+  <div class="top-label">
+    <div class="top-label-line"></div>
+    <span class="top-label-text">Accès sécurisé</span>
+    <div class="top-label-line right"></div>
+  </div>
+
+  <!-- Card -->
+  <div class="card">
+
+    <!-- Logo -->
+    <div class="logo-area">
+      <div class="logo-icon">RX</div>
+      <div class="logo-text">Rehab<span>XR</span></div>
+    </div>
+
+    <!-- Subtitle -->
+    <p class="card-subtitle">Portail thérapeute · ENP Alger</p>
+
+    <!-- Divider badge -->
+    <div class="divider">
+      <div class="divider-line"></div>
+      <div class="divider-badge">Accès restreint</div>
+      <div class="divider-line"></div>
+    </div>
+
+    <!-- Error message -->
+    <div class="message error" id="msg-error">
+      <span>⚠️</span>
+      <span id="msg-error-text">Mot de passe incorrect. Réessayez.</span>
+    </div>
+
+    <!-- Success message -->
+    <div class="message success" id="msg-success">
+      <span>✅</span>
+      <span>Authentification réussie. Redirection...</span>
+    </div>
+
+    <!-- Input -->
+    <div class="input-group">
+      <label class="input-label" for="password">Mot de passe</label>
+      <div class="input-wrap">
+        <span class="input-icon">🔑</span>
+        <input
+          type="password"
+          id="password"
+          class="password-input"
+          placeholder="••••••••••••"
+          autocomplete="current-password"
+          onkeydown="if(event.key==='Enter') login()"
+        >
+        <button class="eye-btn" type="button" onclick="toggleEye()" id="eye-btn" title="Afficher/Masquer">
+          <span id="eye-icon">👁️</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Attempts dots -->
+    <div class="attempts" id="attempts">
+      <div class="attempt-dot" id="d1"></div>
+      <div class="attempt-dot" id="d2"></div>
+      <div class="attempt-dot" id="d3"></div>
+    </div>
+
+    <!-- Submit -->
+    <button class="submit-btn" id="submit-btn" onclick="login()">
+      <div class="spinner" id="spinner"></div>
+      <span id="btn-text">Accéder à la plateforme</span>
+      <span id="btn-arrow">→</span>
+    </button>
+
+    <!-- Footer -->
+    <div class="card-footer">
+      <p>Ce portail est réservé aux thérapeutes autorisés.</p>
+      <div class="shield">🔒 Connexion chiffrée · Projet PFE 2026</div>
+    </div>
+
+  </div>
+
+  <!-- Bottom tags -->
+  <div class="bottom-info">
+    <span class="info-tag">Meta Quest 3</span>
+    <span class="info-tag">Mixed Reality</span>
+    <span class="info-tag">RehabXR v1.0</span>
+  </div>
+
+</div>
+
+<script>
+  let attempts = 0;
+  const maxAttempts = 3;
+  let eyeOpen = false;
+  let blocked = false;
+
+  function toggleEye() {
+    const input = document.getElementById('password');
+    const icon = document.getElementById('eye-icon');
+    eyeOpen = !eyeOpen;
+    input.type = eyeOpen ? 'text' : 'password';
+    icon.textContent = eyeOpen ? '🙈' : '👁️';
+  }
+
+  function setLoading(state) {
+    const btn = document.getElementById('submit-btn');
+    const spinner = document.getElementById('spinner');
+    const text = document.getElementById('btn-text');
+    const arrow = document.getElementById('btn-arrow');
+
+    if (state) {
+      btn.disabled = true;
+      spinner.style.display = 'block';
+      text.textContent = 'Vérification...';
+      arrow.style.display = 'none';
+    } else {
+      btn.disabled = false;
+      spinner.style.display = 'none';
+      text.textContent = 'Accéder à la plateforme';
+      arrow.style.display = 'inline';
+    }
+  }
+
+  function showError(msg) {
+    const el = document.getElementById('msg-error');
+    const txt = document.getElementById('msg-error-text');
+    txt.textContent = msg;
+    el.classList.add('show');
+    document.getElementById('msg-success').classList.remove('show');
+    document.getElementById('password').style.borderColor = 'rgba(239,68,68,0.5)';
+    document.getElementById('password').style.boxShadow = '0 0 0 3px rgba(239,68,68,0.08)';
+  }
+
+  function clearMessages() {
+    document.getElementById('msg-error').classList.remove('show');
+    document.getElementById('msg-success').classList.remove('show');
+    document.getElementById('password').style.borderColor = '';
+    document.getElementById('password').style.boxShadow = '';
+  }
+
+  function updateAttempts() {
+    document.getElementById('attempts').classList.add('show');
+    for (let i = 1; i <= maxAttempts; i++) {
+      const dot = document.getElementById(`d${i}`);
+      if (i <= attempts) dot.classList.add('used');
+      else dot.classList.remove('used');
+    }
+  }
+
+  function login() {
+    if (blocked) return;
+
+    const pwd = document.getElementById('password').value;
+    if (!pwd.trim()) {
+      showError('Veuillez saisir votre mot de passe.');
+      return;
+    }
+
+    clearMessages();
+    setLoading(true);
+
+    fetch('/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: pwd })
+    })
+    .then(res => {
+      setLoading(false);
+      if (res.ok) {
+        // Success
+        document.getElementById('msg-success').classList.add('show');
+        document.getElementById('password').style.borderColor = 'rgba(16,185,129,0.5)';
+        document.getElementById('password').style.boxShadow = '0 0 0 3px rgba(16,185,129,0.08)';
+        document.getElementById('submit-btn').style.background = 'linear-gradient(135deg, #10b981, #059669)';
+        setTimeout(() => { window.location.href = '/app'; }, 1200);
+      } else {
+        attempts++;
+        updateAttempts();
+
+        if (attempts >= maxAttempts) {
+          blocked = true;
+          document.getElementById('submit-btn').disabled = true;
+          showError(`Trop de tentatives échouées. Réessayez dans 30 secondes.`);
+          setTimeout(() => {
+            blocked = false;
+            attempts = 0;
+            document.getElementById('submit-btn').disabled = false;
+            document.getElementById('attempts').classList.remove('show');
+            clearMessages();
+            ['d1','d2','d3'].forEach(id => document.getElementById(id).classList.remove('used'));
+          }, 30000);
+        } else {
+          const remaining = maxAttempts - attempts;
+          showError(`Mot de passe incorrect. ${remaining} tentative${remaining > 1 ? 's' : ''} restante${remaining > 1 ? 's' : ''}.`);
+          document.getElementById('password').value = '';
+          document.getElementById('password').focus();
+        }
+      }
+    })
+    .catch(() => {
+      setLoading(false);
+      showError('Impossible de joindre le serveur. Vérifiez la connexion.');
+    });
+  }
+
+  // Clear error on typing
+  document.getElementById('password').addEventListener('input', clearMessages);
+</script>
+</body>
+</html>

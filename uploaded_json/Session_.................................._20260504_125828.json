@@ -1,0 +1,410 @@
+{
+    "patientName": "nesrine",
+    "sessionDate": "04/05/2026 12:58:28",
+    "totalCorrect": 79,
+    "totalErrors": 14,
+    "totalManipulated": 93,
+    "totalTime": 486.8639831542969,
+    "totalAccuracy": 0.8494623899459839,
+    "levels": [
+        {
+            "level": 1,
+            "correct": 31,
+            "errors": 0,
+            "manipulated": 31,
+            "time": 146.83590698242188,
+            "accuracy": 1.0,
+            "colorStats": [
+                {
+                    "color": "Blue",
+                    "totalBalls": 5,
+                    "correct": 5,
+                    "errors": 0
+                },
+                {
+                    "color": "Yellow",
+                    "totalBalls": 5,
+                    "correct": 5,
+                    "errors": 0
+                },
+                {
+                    "color": "Purple",
+                    "totalBalls": 5,
+                    "correct": 5,
+                    "errors": 0
+                },
+                {
+                    "color": "Red",
+                    "totalBalls": 5,
+                    "correct": 5,
+                    "errors": 0
+                },
+                {
+                    "color": "Orange",
+                    "totalBalls": 5,
+                    "correct": 5,
+                    "errors": 0
+                },
+                {
+                    "color": "Green",
+                    "totalBalls": 6,
+                    "correct": 6,
+                    "errors": 0
+                }
+            ],
+            "basketStats": [
+                {
+                    "basketColor": "Blue",
+                    "distance": "Medium",
+                    "height": "Low",
+                    "side": "Center",
+                    "attempts": 5,
+                    "correct": 5,
+                    "errors": 0
+                },
+                {
+                    "basketColor": "Yellow",
+                    "distance": "Medium",
+                    "height": "Low",
+                    "side": "Left",
+                    "attempts": 5,
+                    "correct": 5,
+                    "errors": 0
+                },
+                {
+                    "basketColor": "Purple",
+                    "distance": "Near",
+                    "height": "Low",
+                    "side": "Center",
+                    "attempts": 5,
+                    "correct": 5,
+                    "errors": 0
+                },
+                {
+                    "basketColor": "Red",
+                    "distance": "Far",
+                    "height": "Low",
+                    "side": "Left",
+                    "attempts": 5,
+                    "correct": 5,
+                    "errors": 0
+                },
+                {
+                    "basketColor": "Orange",
+                    "distance": "Medium",
+                    "height": "Low",
+                    "side": "Right",
+                    "attempts": 5,
+                    "correct": 5,
+                    "errors": 0
+                },
+                {
+                    "basketColor": "Green",
+                    "distance": "Far",
+                    "height": "Low",
+                    "side": "Right",
+                    "attempts": 6,
+                    "correct": 6,
+                    "errors": 0
+                }
+            ]
+        },
+        {
+            "level": 2,
+            "correct": 0,
+            "errors": 13,
+            "manipulated": 13,
+            "time": 120.01221466064453,
+            "accuracy": 0.0,
+            "colorStats": [
+                {
+                    "color": "Green",
+                    "totalBalls": 2,
+                    "correct": 0,
+                    "errors": 2
+                },
+                {
+                    "color": "Yellow",
+                    "totalBalls": 3,
+                    "correct": 0,
+                    "errors": 3
+                },
+                {
+                    "color": "Purple",
+                    "totalBalls": 2,
+                    "correct": 0,
+                    "errors": 2
+                },
+                {
+                    "color": "Blue",
+                    "totalBalls": 3,
+                    "correct": 0,
+                    "errors": 3
+                },
+                {
+                    "color": "Orange",
+                    "totalBalls": 2,
+                    "correct": 0,
+                    "errors": 2
+                },
+                {
+                    "color": "Red",
+                    "totalBalls": 1,
+                    "correct": 0,
+                    "errors": 1
+                }
+            ],
+            "basketStats": [
+                {
+                    "basketColor": "Blue",
+                    "distance": "Near",
+                    "height": "Low",
+                    "side": "Center",
+                    "attempts": 2,
+                    "correct": 0,
+                    "errors": 2
+                },
+                {
+                    "basketColor": "Green",
+                    "distance": "Medium",
+                    "height": "Low",
+                    "side": "Right",
+                    "attempts": 6,
+                    "correct": 0,
+                    "errors": 6
+                },
+                {
+                    "basketColor": "Red",
+                    "distance": "Medium",
+                    "height": "Low",
+                    "side": "Left",
+                    "attempts": 1,
+                    "correct": 0,
+                    "errors": 1
+                },
+                {
+                    "basketColor": "Purple",
+                    "distance": "Far",
+                    "height": "High",
+                    "side": "Center",
+                    "attempts": 3,
+                    "correct": 0,
+                    "errors": 3
+                },
+                {
+                    "basketColor": "Orange",
+                    "distance": "Far",
+                    "height": "High",
+                    "side": "Right",
+                    "attempts": 1,
+                    "correct": 0,
+                    "errors": 1
+                }
+            ]
+        },
+        {
+            "level": 2,
+            "correct": 30,
+            "errors": 0,
+            "manipulated": 30,
+            "time": 120.0130615234375,
+            "accuracy": 1.0,
+            "colorStats": [
+                {
+                    "color": "Red",
+                    "totalBalls": 6,
+                    "correct": 6,
+                    "errors": 0
+                },
+                {
+                    "color": "Orange",
+                    "totalBalls": 5,
+                    "correct": 5,
+                    "errors": 0
+                },
+                {
+                    "color": "Blue",
+                    "totalBalls": 5,
+                    "correct": 5,
+                    "errors": 0
+                },
+                {
+                    "color": "Green",
+                    "totalBalls": 4,
+                    "correct": 4,
+                    "errors": 0
+                },
+                {
+                    "color": "Purple",
+                    "totalBalls": 5,
+                    "correct": 5,
+                    "errors": 0
+                },
+                {
+                    "color": "Yellow",
+                    "totalBalls": 5,
+                    "correct": 5,
+                    "errors": 0
+                }
+            ],
+            "basketStats": [
+                {
+                    "basketColor": "Red",
+                    "distance": "Medium",
+                    "height": "Low",
+                    "side": "Left",
+                    "attempts": 6,
+                    "correct": 6,
+                    "errors": 0
+                },
+                {
+                    "basketColor": "Orange",
+                    "distance": "Far",
+                    "height": "High",
+                    "side": "Right",
+                    "attempts": 5,
+                    "correct": 5,
+                    "errors": 0
+                },
+                {
+                    "basketColor": "Blue",
+                    "distance": "Near",
+                    "height": "Low",
+                    "side": "Center",
+                    "attempts": 5,
+                    "correct": 5,
+                    "errors": 0
+                },
+                {
+                    "basketColor": "Green",
+                    "distance": "Medium",
+                    "height": "Low",
+                    "side": "Right",
+                    "attempts": 4,
+                    "correct": 4,
+                    "errors": 0
+                },
+                {
+                    "basketColor": "Purple",
+                    "distance": "Far",
+                    "height": "High",
+                    "side": "Center",
+                    "attempts": 5,
+                    "correct": 5,
+                    "errors": 0
+                },
+                {
+                    "basketColor": "Yellow",
+                    "distance": "Far",
+                    "height": "High",
+                    "side": "Left",
+                    "attempts": 5,
+                    "correct": 5,
+                    "errors": 0
+                }
+            ]
+        },
+        {
+            "level": 3,
+            "correct": 18,
+            "errors": 1,
+            "manipulated": 19,
+            "time": 100.0028076171875,
+            "accuracy": 0.9473684430122376,
+            "colorStats": [
+                {
+                    "color": "Yellow",
+                    "totalBalls": 2,
+                    "correct": 2,
+                    "errors": 0
+                },
+                {
+                    "color": "Red",
+                    "totalBalls": 2,
+                    "correct": 1,
+                    "errors": 1
+                },
+                {
+                    "color": "Orange",
+                    "totalBalls": 4,
+                    "correct": 4,
+                    "errors": 0
+                },
+                {
+                    "color": "Purple",
+                    "totalBalls": 5,
+                    "correct": 5,
+                    "errors": 0
+                },
+                {
+                    "color": "Green",
+                    "totalBalls": 3,
+                    "correct": 3,
+                    "errors": 0
+                },
+                {
+                    "color": "Blue",
+                    "totalBalls": 3,
+                    "correct": 3,
+                    "errors": 0
+                }
+            ],
+            "basketStats": [
+                {
+                    "basketColor": "Yellow",
+                    "distance": "Far",
+                    "height": "High",
+                    "side": "Left",
+                    "attempts": 2,
+                    "correct": 2,
+                    "errors": 0
+                },
+                {
+                    "basketColor": "Green",
+                    "distance": "Near",
+                    "height": "Low",
+                    "side": "Right",
+                    "attempts": 4,
+                    "correct": 3,
+                    "errors": 1
+                },
+                {
+                    "basketColor": "Orange",
+                    "distance": "Medium",
+                    "height": "Low",
+                    "side": "Right",
+                    "attempts": 4,
+                    "correct": 4,
+                    "errors": 0
+                },
+                {
+                    "basketColor": "Purple",
+                    "distance": "Near",
+                    "height": "Middle",
+                    "side": "Center",
+                    "attempts": 5,
+                    "correct": 5,
+                    "errors": 0
+                },
+                {
+                    "basketColor": "Blue",
+                    "distance": "Near",
+                    "height": "Middle",
+                    "side": "Right",
+                    "attempts": 3,
+                    "correct": 3,
+                    "errors": 0
+                },
+                {
+                    "basketColor": "Red",
+                    "distance": "Far",
+                    "height": "High",
+                    "side": "Left",
+                    "attempts": 1,
+                    "correct": 1,
+                    "errors": 0
+                }
+            ]
+        }
+    ]
+}
