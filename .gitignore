@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+
+generated_reports/
+uploaded_json/
+
+.env
