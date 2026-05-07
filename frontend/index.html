@@ -951,26 +951,12 @@
             align-items: center;
         }
 
-        .enp-logo-placeholder {
-            width: 140px;
-            height: 140px;
-            background: var(--surface);
-            border: 2px dashed var(--border);
-            border-radius: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            color: var(--text3);
-            font-size: 12px;
-            text-align: center;
-            flex-shrink: 0;
+       .enp-logo{
+            width:160px;
+            height:auto;
+            object-fit:contain;
+            filter: drop-shadow(0 0 20px rgba(0,194,255,0.25));
         }
-
-            .enp-logo-placeholder span {
-                font-size: 32px;
-            }
 
         .enp-info h3 {
             font-family: 'DM Serif Display', serif;
@@ -1714,11 +1700,15 @@
     <!-- ENP -->
     <section class="section enp-section" id="enp">
         <div class="enp-wrap">
-            <div class="enp-logo-placeholder" id="enp-logo-area">
-                <span>🎓</span>
-                <span data-lang="fr">Logo ENP<br>(à ajouter)</span>
-                <span data-lang="en">ENP Logo<br>(to add)</span>
+
+            <div id="enp-logo-area">
+                <img 
+                    src="assets/Logo-ENP.png" 
+                    alt="ENP Logo" 
+                    class="enp-logo"
+                >
             </div>
+
             <div class="enp-info">
                 <h3>
                     <span data-lang="fr">École Nationale Polytechnique</span>
