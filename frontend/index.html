@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RehabXR — Plateforme de Rééducation en Réalité Mixte</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="icon" type="image/png" href="/assets/Logo-APP.png">
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -74,36 +75,29 @@
             transition: all 0.3s ease;
         }
 
-        .nav-logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            text-decoration: none;
+        .nav-logo{
+            display:flex;
+            align-items:center;
+            gap:14px;
+            text-decoration:none;
+        }
+        
+        .nav-logo-img{
+            width:52px;
+            height:52px;
+            object-fit:contain;
+            filter: drop-shadow(0 0 18px rgba(0,194,255,0.35));
         }
 
-        .nav-logo-icon {
-            width: 36px;
-            height: 36px;
-            background: linear-gradient(135deg, var(--accent), var(--accent2));
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-            font-weight: 800;
-            color: white;
-            letter-spacing: -1px;
+        .nav-logo-text{
+            font-size:28px;
+            font-weight:700;
+            color:white;
+            letter-spacing:-0.5px;
         }
 
-        .nav-logo-text {
-            font-size: 20px;
-            font-weight: 700;
-            color: var(--white);
-            letter-spacing: -0.5px;
-        }
-
-            .nav-logo-text span {
-                color: var(--accent);
+            .nav-logo-text span{
+                color:var(--accent);
             }
 
         .nav-links {
@@ -1347,9 +1341,16 @@
     <!-- NAV -->
     <nav>
         <a href="#" class="nav-logo">
-            <div class="nav-logo-icon">RX</div>
-            <span class="nav-logo-text">Rehab<span>XR</span></span>
+            <img 
+                src="/assets/Logo-APP.png"
+                alt="PhoeniXR Logo"
+                class="nav-logo-img"
+            >
+            <span class="nav-logo-text">
+                Phoeni<span>XR</span>
+            </span>
         </a>
+
         <ul class="nav-links">
             <li><a href="#apps" data-i18n-fr="Applications" data-i18n-en="Applications">Applications</a></li>
             <li><a href="#how" data-i18n-fr="Comment ça marche" data-i18n-en="How it works">Comment ça marche</a></li>
