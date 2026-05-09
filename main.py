@@ -1,6 +1,7 @@
 from fastapi import FastAPI, UploadFile, File, Form, Request
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 import shutil
 import os
 import json
@@ -14,6 +15,7 @@ from reports.ball_sorting_report import generate_clinical_pdf
 app = FastAPI()
 
 PASSWORD = "RehabXR-ENP@2026!Clinical"
+app.mount("/assets", StaticFiles(directory="assets"), name="assets")
 
 app.add_middleware(
     CORSMiddleware,
