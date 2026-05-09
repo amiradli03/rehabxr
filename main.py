@@ -15,7 +15,7 @@ from reports.ball_sorting_report import generate_clinical_pdf
 app = FastAPI()
 
 PASSWORD = "RehabXR-ENP@2026!Clinical"
-app.mount("/assets", StaticFiles(directory="assets"), name="assets")
+app.mount("/assets", StaticFiles(directory="frontend/assets"), name="assets")
 
 app.add_middleware(
     CORSMiddleware,
