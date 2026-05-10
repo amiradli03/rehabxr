@@ -128,7 +128,7 @@ def generate_clinical_pdf(json_file, patient_info=None):
             "Temps",
             "Taux de réussite global (%)",
             "Précision de tri (%)",
-            "Taux de réalisation (%)"
+            "Taux de réalisation (%)",
             "Accuracy (%)"
         ]
     )
