@@ -12,6 +12,8 @@ from reportlab.platypus import (
 from reportlab.lib.units import cm
 from datetime import datetime
 
+TOTAL_BALLS_PER_LEVEL = 31
+
 def percent(x):
     return round(x * 100, 1)
 
@@ -77,29 +79,30 @@ def generate_clinical_pdf(json_file, patient_info=None):
     # =========================
     # TABLEAU PAR NIVEAU
     # =========================
-
+    
     level_rows = []
-
     level_counts = {}
 
     for lvl in levels:
         level_num = lvl["level"]
-    
+        
         if level_num not in level_counts:
             level_counts[level_num] = 1
         else:
             level_counts[level_num] += 1
-            
+
         attempt = level_counts[level_num]
-        
         label = f"Niveau {level_num} - Essai {attempt}"
 
         correct = lvl.get("correct", 0)
         errors = lvl.get("errors", 0)
         manipulated = lvl.get("manipulated", 0)
         time = lvl.get("time", 0)
-        accuracy = percent(lvl.get("accuracy", 0))
-
+        
+        success_rate = percent(correct / TOTAL_BALLS_PER_LEVEL) if TOTAL_BALLS_PER_LEVEL > 0 else 0
+        sorting_precision = percent(correct / manipulated) if manipulated > 0 else 0
+        completion_rate = percent(manipulated / TOTAL_BALLS_PER_LEVEL) if TOTAL_BALLS_PER_LEVEL > 0 else 0
+        
         level_rows.append([
             label,
             correct,
@@ -107,9 +110,11 @@ def generate_clinical_pdf(json_file, patient_info=None):
             manipulated,
             round(time, 1),
             seconds_to_min_sec(time),
-            accuracy
+            success_rate,
+            sorting_precision,
+            completion_rate
         ])
-
+        
     df_levels = pd.DataFrame(
         level_rows,
         columns=[
@@ -119,7 +124,9 @@ def generate_clinical_pdf(json_file, patient_info=None):
             "Balles manipulées",
             "Temps (s)",
             "Temps",
-            "Accuracy (%)"
+            "Taux de réussite global (%)",
+            "Précision de tri (%)",
+            "Taux de réalisation (%)"
         ]
     )
 
@@ -128,7 +135,7 @@ def generate_clinical_pdf(json_file, patient_info=None):
     # =========================
 
     level_labels = df_levels["Niveau"].tolist()
-    accuracy_values = df_levels["Accuracy (%)"].tolist()
+    success_rate_values = df_levels["Taux de réussite global (%)"].tolist()
     error_values = df_levels["Erreurs"].tolist()
     time_values = df_levels["Temps (s)"].tolist()
 
@@ -307,7 +314,7 @@ def generate_clinical_pdf(json_file, patient_info=None):
     # CRÉATION DES GRAPHES
     # =========================
 
-    save_bar_chart(level_labels, accuracy_values, "Accuracy par niveau", "Accuracy (%)", "graph_accuracy_niveaux.png", "#4A90E2")
+    save_bar_chart(level_labels, success_rate_values, "Taux de réussite global par niveau", "Taux de réussite (%)", "graph_accuracy_niveaux.png", "#4A90E2")
     save_bar_chart(level_labels, error_values, "Erreurs par niveau", "Nombre d'erreurs", "graph_erreurs_niveaux.png", "#E74C3C")
     save_bar_chart(level_labels, time_values, "Temps par niveau", "Temps (s)", "graph_temps_niveaux.png", "#F5A623")
 
@@ -388,32 +395,27 @@ def generate_clinical_pdf(json_file, patient_info=None):
     story.append(cover_table)
     story.append(PageBreak())
 
-
-   
-
-
-
     # Synthèse clinique
     story.append(Paragraph("Synthèse clinique", styles["Heading2"]))
     
-    total_balls = 0
-    
-    for lvl in levels:
-        for c in lvl.get("colorStats", []):
-            total_balls += c.get("totalBalls", 0)
+    total_balls = TOTAL_BALLS_PER_LEVEL * len(levels)
 
+    global_success_rate = percent(total_correct / total_balls) if total_balls > 0 else 0
+    global_sorting_precision = percent(total_correct / total_manipulated) if total_manipulated > 0 else 0
+    
     summary_data = [
-        ["Correct", "Erreurs", "Balles manipulées", "Temps total", "Accuracy"],
+        ["Correctes", "Erreurs", "Balles manipulées", "Taux de réussite global", "Précision de tri", "Temps total"],
         [
-            f"{total_correct} / {total_manipulated}",
-            f"{total_errors} / {total_manipulated}",
+            f"{total_correct} / {total_balls}",
+            f"{total_errors} / {total_balls}",
             f"{total_manipulated} / {total_balls}",
-            seconds_to_min_sec(total_time),
-            f"{total_accuracy}%"
+            f"{global_success_rate}%",
+            f"{global_sorting_precision}%",
+            seconds_to_min_sec(total_time)
         ]
     ]
 
-    summary_table = Table(summary_data, colWidths=[3*cm, 3*cm, 4*cm, 3*cm, 3*cm])
+    summary_table = Table(summary_data, colWidths=[2.7*cm, 2.5*cm, 3.2*cm, 3.2*cm, 3*cm, 2.5*cm])
     summary_table.setStyle(TableStyle([
         ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#D6EAF8")),
         ("TEXTCOLOR", (0, 0), (-1, 0), colors.HexColor("#1B4F72")),
@@ -451,12 +453,25 @@ def generate_clinical_pdf(json_file, patient_info=None):
     
     story.append(Paragraph("Résultats détaillés par niveau", styles["Heading2"]))
     story.append(Spacer(1, 12))
-    
+
+    level_total_counts = {}
+
+    for lvl in levels:
+        level_num = lvl.get("level")
+        level_total_counts[level_num] = level_total_counts.get(level_num, 0) + 1
+
     for i, lvl in enumerate(levels):
         level_label = level_labels_for_stats[i]
         level_num = lvl.get("level")
-        
-        story.append(Paragraph(level_titles.get(level_num, level_label), styles["Heading2"]))
+
+        attempt_number = int(level_label.split("Essai ")[1])
+
+        detailed_level_title = level_titles.get(level_num, f"Niveau {level_num}")
+
+        if level_total_counts.get(level_num, 0) > 1:
+            detailed_level_title += f" - Essai {attempt_number}"
+
+        story.append(Paragraph(detailed_level_title, styles["Heading2"]))
         story.append(Spacer(1, 8))
         
         img_path = level_images.get(level_num)
@@ -471,24 +486,28 @@ def generate_clinical_pdf(json_file, patient_info=None):
         lvl_errors = lvl.get("errors", 0)
         lvl_manipulated = lvl.get("manipulated", 0)
         lvl_time = lvl.get("time", 0)
-        lvl_accuracy = percent(lvl.get("accuracy", 0))
+
+
+        lvl_total_balls = TOTAL_BALLS_PER_LEVEL
         
-        lvl_total_balls = 0
-        for c in lvl.get("colorStats", []):
-            lvl_total_balls += c.get("totalBalls", 0)
-            
+        lvl_success_rate = percent(lvl_correct / lvl_total_balls) if lvl_total_balls > 0 else 0
+        lvl_sorting_precision = percent(lvl_correct / lvl_manipulated) if lvl_manipulated > 0 else 0
+        
         metrics_data = [
-            ["Correct", "Erreurs", "Balles manipulées", "Temps", "Accuracy"],
+            ["Correctes", "Erreurs", "Balles manipulées", "Taux de réussite global", "Précision de tri", "Temps"],
             [
-                f"{lvl_correct} / {lvl_manipulated}",
-                f"{lvl_errors} / {lvl_manipulated}",
+                f"{lvl_correct} / {lvl_total_balls}",
+                f"{lvl_errors} / {lvl_total_balls}",
                 f"{lvl_manipulated} / {lvl_total_balls}",
-                seconds_to_min_sec(lvl_time),
-                f"{lvl_accuracy}%"
+                f"{lvl_success_rate}%",
+                f"{lvl_sorting_precision}%",
+                seconds_to_min_sec(lvl_time)
             ]
         ]
         
-        metrics_table = Table(metrics_data, colWidths=[3*cm, 3*cm, 4*cm, 3*cm, 3*cm])
+
+
+        metrics_table = Table(metrics_data, colWidths=[2.7*cm, 2.5*cm, 3.2*cm, 3.2*cm, 3*cm, 2.5*cm])
         metrics_table.setStyle(TableStyle([
             ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#D6EAF8")),
             ("TEXTCOLOR", (0, 0), (-1, 0), colors.HexColor("#1B4F72")),
@@ -645,16 +664,17 @@ def generate_clinical_pdf(json_file, patient_info=None):
     # Résultats par niveau
     story.append(Paragraph("Résultats par niveau", styles["Heading2"]))
 
-    level_table_data = [["Niveau", "Correct", "Erreurs", "Manipulées", "Temps", "Accuracy"]]
+    level_table_data = [["Niveau", "Correctes", "Erreurs", "Manipulées", "Taux réussite", "Précision tri", "Temps"]]
 
     for _, row in df_levels.iterrows():
         level_table_data.append([
             row["Niveau"],
-            row["Correct"],
-            row["Erreurs"],
-            row["Balles manipulées"],
-            row["Temps"],
-            f'{row["Accuracy (%)"]}%'
+            f'{row["Correct"]} / {TOTAL_BALLS_PER_LEVEL}',
+            f'{row["Erreurs"]} / {TOTAL_BALLS_PER_LEVEL}',
+            f'{row["Balles manipulées"]} / {TOTAL_BALLS_PER_LEVEL}',
+            f'{row["Taux de réussite global (%)"]}%',
+            f'{row["Précision de tri (%)"]}%',
+            row["Temps"]
         ])
 
     level_table = Table(level_table_data)
@@ -796,4 +816,3 @@ def generate_clinical_pdf(json_file, patient_info=None):
     doc.build(story)
 
     return pdf_name
-
