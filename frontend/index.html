@@ -1239,6 +1239,33 @@
                 filter: brightness(1.1);
             }
 
+
+        .clear-btn {
+            width: 100%;
+            padding: 13px;
+            margin-bottom: 12px;
+            font-size: 14px;
+            font-weight: 700;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            cursor: pointer; 
+            font-family: 'Sora', sans-serif; 
+            background: var(--surface); 
+            color: var(--text2); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 8px;
+            transition: all 0.3s;
+        }
+        
+        .clear-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: rgba(0,194,255,0.05);
+        }
+
+
         .coming-soon-banner {
             text-align: center;
             padding: 32px;
@@ -1253,6 +1280,10 @@
                 font-size: 32px;
                 margin-bottom: 12px;
             }
+
+
+
+        
 
         /* ===== SCROLLBAR ===== */
         ::-webkit-scrollbar {
@@ -1811,6 +1842,12 @@
                     <span id="filename-ball">—</span>
                 </div>
 
+                <button class="clear-btn" onclick="clearForm('ball')" type="button">
+                    <span>🧹</span>
+                    <span data-lang="fr">Réinitialiser</span>
+                    <span data-lang="en">Clear</span>
+                </button>
+
                 <button class="generate-btn ball-btn" id="btn-ball" disabled onclick="generateReport('ball')">
                     <span>⚡</span>
                     <span data-lang="fr">Générer le rapport clinique</span>
@@ -1955,6 +1992,34 @@
     window[`selectedFile_${appType}`] = file;
   }
 
+
+
+  // ===== CLEAR ====
+
+  function clearForm(appType) {
+    document.getElementById(`patient-lastname-${appType}`).value = "";
+    document.getElementById(`patient-firstname-${appType}`).value = "";
+    document.getElementById(`patient-birthdate-${appType}`).value = "";
+    document.getElementById(`therapist-name-${appType}`).value = "";
+
+    document.getElementById(`input-${appType}`).value = "";
+    document.getElementById(`filename-${appType}`).textContent = "—";
+    document.getElementById(`file-info-${appType}`).classList.remove("show");
+
+    window[`selectedFile_${appType}`] = null;
+
+    const btn = document.getElementById(`btn-${appType}`);
+    btn.disabled = true;
+
+    btn.innerHTML = `
+        <span>⚡</span>
+        <span data-lang="fr">Générer le rapport clinique</span>
+        <span data-lang="en">Generate clinical report</span>
+    `;
+
+    setLang(currentLang);
+  }
+  
   // ===== GENERATE REPORT =====
   function generateReport(appType) {
   const btn = document.getElementById(`btn-${appType}`);
