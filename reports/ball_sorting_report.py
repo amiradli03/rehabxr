@@ -402,20 +402,22 @@ def generate_clinical_pdf(json_file, patient_info=None):
 
     global_success_rate = percent(total_correct / total_balls) if total_balls > 0 else 0
     global_sorting_precision = percent(total_correct / total_manipulated) if total_manipulated > 0 else 0
-    
+    global_completion_rate = percent(total_manipulated / total_balls) if total_balls > 0 else 0
+
     summary_data = [
-        ["Correctes", "Erreurs", "Balles manipulées", "Taux de réussite global", "Précision de tri", "Temps total"],
+        ["Correctes", "Erreurs", "Balles manipulées", "Taux de réussite global", "Précision de tri", "Taux de réalisation", "Temps total"],
         [
             f"{total_correct} / {total_balls}",
             f"{total_errors} / {total_balls}",
             f"{total_manipulated} / {total_balls}",
             f"{global_success_rate}%",
             f"{global_sorting_precision}%",
+            f"{global_completion_rate}%",
             seconds_to_min_sec(total_time)
         ]
     ]
 
-    summary_table = Table(summary_data, colWidths=[2.7*cm, 2.5*cm, 3.2*cm, 3.2*cm, 3*cm, 2.5*cm])
+    summary_table = Table(summary_data, colWidths=[2.3*cm, 2.2*cm, 2.8*cm, 2.8*cm, 2.5*cm, 2.6*cm, 2.2*cm])
     summary_table.setStyle(TableStyle([
         ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#D6EAF8")),
         ("TEXTCOLOR", (0, 0), (-1, 0), colors.HexColor("#1B4F72")),
@@ -492,22 +494,24 @@ def generate_clinical_pdf(json_file, patient_info=None):
         
         lvl_success_rate = percent(lvl_correct / lvl_total_balls) if lvl_total_balls > 0 else 0
         lvl_sorting_precision = percent(lvl_correct / lvl_manipulated) if lvl_manipulated > 0 else 0
+        lvl_completion_rate = percent(lvl_manipulated / lvl_total_balls) if lvl_total_balls > 0 else 0
         
         metrics_data = [
-            ["Correctes", "Erreurs", "Balles manipulées", "Taux de réussite global", "Précision de tri", "Temps"],
+            ["Correctes", "Erreurs", "Balles manipulées", "Taux de réussite global", "Précision de tri", "Taux de réalisation", "Temps"],
             [
                 f"{lvl_correct} / {lvl_total_balls}",
                 f"{lvl_errors} / {lvl_total_balls}",
                 f"{lvl_manipulated} / {lvl_total_balls}",
                 f"{lvl_success_rate}%",
                 f"{lvl_sorting_precision}%",
+                f"{lvl_completion_rate}%",
                 seconds_to_min_sec(lvl_time)
             ]
         ]
         
 
 
-        metrics_table = Table(metrics_data, colWidths=[2.7*cm, 2.5*cm, 3.2*cm, 3.2*cm, 3*cm, 2.5*cm])
+        metrics_table = Table(metrics_data, colWidths=[2.3*cm, 2.2*cm, 2.8*cm, 2.8*cm, 2.5*cm, 2.6*cm, 2.2*cm])
         metrics_table.setStyle(TableStyle([
             ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#D6EAF8")),
             ("TEXTCOLOR", (0, 0), (-1, 0), colors.HexColor("#1B4F72")),
@@ -523,21 +527,32 @@ def generate_clinical_pdf(json_file, patient_info=None):
         
         # Statistiques par couleur du niveau
         story.append(Paragraph("Statistiques par couleur", styles["Heading3"]))
-
-        color_data = [["Couleur", "Total", "Correct", "Erreurs", "Accuracy"]]
+        
+        color_data = [["Couleur", "Total", "Correctes", "Erreurs", "Taux de réussite"]]
+        color_level_rows = []
         
         for c in lvl.get("colorStats", []):
             total = c.get("totalBalls", 0)
             correct = c.get("correct", 0)
             errors = c.get("errors", 0)
-            acc = correct / total if total > 0 else 0
+            success_rate_color = correct / total if total > 0 else 0
+            
+            row_data = {
+                "Couleur": c.get("color"),
+                "Total": total,
+                "Correctes": correct,
+                "Erreurs": errors,
+                "Taux de réussite (%)": percent(success_rate_color)
+            }
+            
+            color_level_rows.append(row_data)
             
             color_data.append([
-                c.get("color"),
-                total,
-                correct,
-                errors,
-                f"{percent(acc)}%"
+                row_data["Couleur"],
+                row_data["Total"],
+                row_data["Correctes"],
+                row_data["Erreurs"],
+                f'{row_data["Taux de réussite (%)"]}%'
             ])
             
         color_table = Table(color_data, repeatRows=1)
@@ -556,29 +571,44 @@ def generate_clinical_pdf(json_file, patient_info=None):
         # Statistiques par panier du niveau
         story.append(Paragraph("Statistiques par panier", styles["Heading3"]))
         
-        basket_data = [["Panier", "Distance", "Hauteur", "Côté", "Tent.", "Correct", "Err.", "Acc."]]
+        basket_data = [[
+            "Panier", "Distance", "Hauteur", "Côté",
+            "Balles attendues", "Correctes reçues", "Erreurs reçues",
+            "Taux d'atteinte", "Pureté"
+        ]]
         
         basket_level_rows = []
+
+        # Dictionnaire : pour chaque couleur, combien de balles de cette couleur existaient dans le niveau
+        
+        color_totals_for_level = {
+            c.get("color"): c.get("totalBalls", 0)
+            for c in lvl.get("colorStats", [])
+        }
         
         for b in lvl.get("basketStats", []):
+            basket_color = b.get("basketColor")
             attempts = b.get("attempts", 0)
             correct = b.get("correct", 0)
             errors = b.get("errors", 0)
-            acc = correct / attempts if attempts > 0 else 0
-            error_rate = errors / attempts if attempts > 0 else 0
-
+            
+            expected_balls = color_totals_for_level.get(basket_color, 0)
+            
+            target_reach_rate = correct / expected_balls if expected_balls > 0 else 0
+            purity = correct / attempts if attempts > 0 else 0
+            
             row_data = {
-                "Panier": b.get("basketColor"),
+                "Panier": basket_color,
                 "Distance": b.get("distance"),
                 "Hauteur": b.get("height"),
                 "Côté": b.get("side"),
-                "Tentatives": attempts,
-                "Correct": correct,
-                "Erreurs": errors,
-                "Accuracy (%)": percent(acc),
-                "Taux erreur (%)": percent(error_rate),
+                "Balles attendues": expected_balls,
+                "Correctes reçues": correct,
+                "Erreurs reçues": errors,
+                "Taux atteinte (%)": percent(target_reach_rate),
+                "Pureté (%)": percent(purity),
             }
-
+            
             basket_level_rows.append(row_data)
             
             basket_data.append([
@@ -586,20 +616,26 @@ def generate_clinical_pdf(json_file, patient_info=None):
                 row_data["Distance"],
                 row_data["Hauteur"],
                 row_data["Côté"],
-                row_data["Tentatives"],
-                row_data["Correct"],
-                row_data["Erreurs"],
-                f'{row_data["Accuracy (%)"]}%'
+                row_data["Balles attendues"],
+                row_data["Correctes reçues"],
+                row_data["Erreurs reçues"],
+                f'{row_data["Taux atteinte (%)"]}%',
+                f'{row_data["Pureté (%)"]}%'
             ])
             
-        basket_table = Table(basket_data, repeatRows=1)
+        basket_table = Table(
+            basket_data,
+            repeatRows=1,
+            colWidths=[1.6*cm, 1.4*cm, 1.4*cm, 1.3*cm, 1.8*cm, 1.8*cm, 1.7*cm, 1.8*cm, 1.4*cm]
+        )
+
         basket_table.setStyle(TableStyle([
             ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#FADBD8")),
             ("TEXTCOLOR", (0, 0), (-1, 0), colors.HexColor("#922B21")),
             ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
             ("ALIGN", (0, 0), (-1, -1), "CENTER"),
             ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-            ("FONTSIZE", (0, 0), (-1, -1), 7),
+            ("FONTSIZE", (0, 0), (-1, -1), 6),
         ]))
         
         story.append(basket_table)
@@ -611,35 +647,68 @@ def generate_clinical_pdf(json_file, patient_info=None):
         if len(basket_level_rows) > 0:
             df_level_baskets = pd.DataFrame(basket_level_rows)
             
-            worst_basket = df_level_baskets.sort_values(
-                ["Accuracy (%)", "Taux erreur (%)"],
-                ascending=[True, False]
-            ).iloc[0]
+            worst_target_rate = df_level_baskets["Taux atteinte (%)"].min()
+            worst_target_baskets = df_level_baskets[
+                df_level_baskets["Taux atteinte (%)"] == worst_target_rate
+            ]
             
-            best_basket = df_level_baskets.sort_values(
-                ["Accuracy (%)", "Taux erreur (%)"],
-                ascending=[False, True]
-            ).iloc[0]
+            max_received_errors = df_level_baskets["Erreurs reçues"].max()
+            error_receiving_baskets = df_level_baskets[
+                df_level_baskets["Erreurs reçues"] == max_received_errors
+            ]
             
-            if worst_basket["Accuracy (%)"] == 100:
+            best_target_rate = df_level_baskets["Taux atteinte (%)"].max()
+            best_baskets = df_level_baskets[
+                df_level_baskets["Taux atteinte (%)"] == best_target_rate
+            ]
+            
+            if worst_target_rate == 100 and max_received_errors == 0:
                 story.append(Paragraph(
-                    "• Tous les paniers ont été réussis avec une précision de 100 %. Aucun panier ne présente de difficulté particulière sur ce niveau.",
+                    "• Toutes les cibles ont été atteintes avec un taux de 100 % et aucun panier n'a reçu de balle erronée sur ce niveau.",
                     styles["Normal"]
-            ))
+                ))
             else:
+                worst_basket_descriptions = []
+                for _, row in worst_target_baskets.iterrows():
+                    worst_basket_descriptions.append(
+                        f"le panier {row['Panier']} "
+                        f"(distance {row['Distance']}, hauteur {row['Hauteur']}, côté {row['Côté']}) "
+                        f"avec {row['Taux atteinte (%)']}% de taux d'atteinte "
+                        f"({row['Correctes reçues']} balle(s) correcte(s) reçue(s) sur {row['Balles attendues']} attendue(s))"
+                    )
+                    
                 story.append(Paragraph(
-                    f"• Le panier {worst_basket['Panier']}, situé à distance {worst_basket['Distance']}, "
-                    f"à hauteur {worst_basket['Hauteur']} et du côté {worst_basket['Côté']}, "
-                    f"a présenté la plus grande difficulté du niveau avec {worst_basket['Accuracy (%)']}% de réussite "
-                    f"et {worst_basket['Erreurs']} erreur(s) sur {worst_basket['Tentatives']} tentative(s).",
+                    "• La ou les cibles les moins bien atteintes sont : "
+                    + "; ".join(worst_basket_descriptions) + ".",
                     styles["Normal"]
                 ))
 
                 story.append(Spacer(1, 6))
+
+                if max_received_errors > 0:
+                    error_basket_descriptions = []
+                    for _, row in error_receiving_baskets.iterrows():
+                        error_basket_descriptions.append(
+                            f"le panier {row['Panier']} avec {row['Erreurs reçues']} erreur(s) reçue(s)"
+                        )
+
+                    story.append(Paragraph(
+                        "• Le ou les paniers ayant reçu le plus de balles erronées sont : "
+                        + "; ".join(error_basket_descriptions) + ".",
+                        styles["Normal"]
+                    ))
+                    
+                    story.append(Spacer(1, 6))
                 
+                best_basket_descriptions = []
+                for _, row in best_baskets.iterrows():
+                    best_basket_descriptions.append(
+                        f"le panier {row['Panier']} avec {row['Taux atteinte (%)']}% de taux d'atteinte"
+                    )
+                    
                 story.append(Paragraph(
-                    f"• Le panier {best_basket['Panier']} a été le mieux réussi avec {best_basket['Accuracy (%)']}% de réussite "
-                    f"sur {best_basket['Tentatives']} tentative(s).",
+                    "• Le ou les paniers les mieux atteints sont : "
+                    + "; ".join(best_basket_descriptions) + ".",
                     styles["Normal"]
                 ))
 
@@ -664,7 +733,7 @@ def generate_clinical_pdf(json_file, patient_info=None):
     # Résultats par niveau
     story.append(Paragraph("Résultats par niveau", styles["Heading2"]))
 
-    level_table_data = [["Niveau", "Correctes", "Erreurs", "Manipulées", "Taux réussite", "Précision tri", "Temps"]]
+    level_table_data = [["Niveau", "Correctes", "Erreurs", "Manipulées", "Taux réussite", "Précision tri", "Taux réalisation", "Temps"]]
 
     for _, row in df_levels.iterrows():
         level_table_data.append([
@@ -674,6 +743,7 @@ def generate_clinical_pdf(json_file, patient_info=None):
             f'{row["Balles manipulées"]} / {TOTAL_BALLS_PER_LEVEL}',
             f'{row["Taux de réussite global (%)"]}%',
             f'{row["Précision de tri (%)"]}%',
+            f'{row["Taux de réalisation (%)"]}%',
             row["Temps"]
         ])
 
