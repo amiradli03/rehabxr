@@ -98,7 +98,8 @@ def generate_clinical_pdf(json_file, patient_info=None):
         errors = lvl.get("errors", 0)
         manipulated = lvl.get("manipulated", 0)
         time = lvl.get("time", 0)
-        
+        json_accuracy = percent(lvl.get("accuracy", 0))
+
         success_rate = percent(correct / TOTAL_BALLS_PER_LEVEL) if TOTAL_BALLS_PER_LEVEL > 0 else 0
         sorting_precision = percent(correct / manipulated) if manipulated > 0 else 0
         completion_rate = percent(manipulated / TOTAL_BALLS_PER_LEVEL) if TOTAL_BALLS_PER_LEVEL > 0 else 0
@@ -112,7 +113,8 @@ def generate_clinical_pdf(json_file, patient_info=None):
             seconds_to_min_sec(time),
             success_rate,
             sorting_precision,
-            completion_rate
+            completion_rate,
+            json_accuracy
         ])
         
     df_levels = pd.DataFrame(
@@ -127,6 +129,7 @@ def generate_clinical_pdf(json_file, patient_info=None):
             "Taux de réussite global (%)",
             "Précision de tri (%)",
             "Taux de réalisation (%)"
+            "Accuracy (%)"
         ]
     )
 
@@ -405,7 +408,7 @@ def generate_clinical_pdf(json_file, patient_info=None):
     global_completion_rate = percent(total_manipulated / total_balls) if total_balls > 0 else 0
 
     summary_data = [
-        ["Correctes", "Erreurs", "Balles manipulées", "Taux de réussite global", "Précision de tri", "Taux de réalisation", "Temps total"],
+        ["Correctes", "Erreurs", "Balles manipulées", "Taux de réussite global", "Précision de tri", "Taux de réalisation", "Accuracy", "Temps total"],
         [
             f"{total_correct} / {total_balls}",
             f"{total_errors} / {total_balls}",
@@ -413,11 +416,12 @@ def generate_clinical_pdf(json_file, patient_info=None):
             f"{global_success_rate}%",
             f"{global_sorting_precision}%",
             f"{global_completion_rate}%",
+            f"{total_accuracy}%",
             seconds_to_min_sec(total_time)
         ]
     ]
 
-    summary_table = Table(summary_data, colWidths=[2.3*cm, 2.2*cm, 2.8*cm, 2.8*cm, 2.5*cm, 2.6*cm, 2.2*cm])
+    summary_table = Table(summary_data, colWidths=[2.0*cm, 1.8*cm, 2.3*cm, 2.4*cm, 2.1*cm, 2.2*cm, 2.0*cm, 2.0*cm])
     summary_table.setStyle(TableStyle([
         ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#D6EAF8")),
         ("TEXTCOLOR", (0, 0), (-1, 0), colors.HexColor("#1B4F72")),
@@ -425,6 +429,7 @@ def generate_clinical_pdf(json_file, patient_info=None):
         ("ALIGN", (0, 0), (-1, -1), "CENTER"),
         ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
         ("BACKGROUND", (0, 1), (-1, 1), colors.HexColor("#F8F9F9")),
+        ("FONTSIZE", (0, 0), (-1, -1), 6.5),
     ]))
     
     story.append(summary_table)
@@ -488,6 +493,7 @@ def generate_clinical_pdf(json_file, patient_info=None):
         lvl_errors = lvl.get("errors", 0)
         lvl_manipulated = lvl.get("manipulated", 0)
         lvl_time = lvl.get("time", 0)
+        lvl_json_accuracy = percent(lvl.get("accuracy", 0))
 
 
         lvl_total_balls = TOTAL_BALLS_PER_LEVEL
@@ -497,7 +503,7 @@ def generate_clinical_pdf(json_file, patient_info=None):
         lvl_completion_rate = percent(lvl_manipulated / lvl_total_balls) if lvl_total_balls > 0 else 0
         
         metrics_data = [
-            ["Correctes", "Erreurs", "Balles manipulées", "Taux de réussite global", "Précision de tri", "Taux de réalisation", "Temps"],
+            ["Correctes", "Erreurs", "Balles manipulées", "Taux de réussite global", "Précision de tri", "Taux de réalisation", "Accuracy", "Temps"],
             [
                 f"{lvl_correct} / {lvl_total_balls}",
                 f"{lvl_errors} / {lvl_total_balls}",
@@ -505,13 +511,14 @@ def generate_clinical_pdf(json_file, patient_info=None):
                 f"{lvl_success_rate}%",
                 f"{lvl_sorting_precision}%",
                 f"{lvl_completion_rate}%",
+                f"{lvl_json_accuracy}%",
                 seconds_to_min_sec(lvl_time)
             ]
         ]
         
 
 
-        metrics_table = Table(metrics_data, colWidths=[2.3*cm, 2.2*cm, 2.8*cm, 2.8*cm, 2.5*cm, 2.6*cm, 2.2*cm])
+        metrics_table = Table(metrics_data, colWidths=[2.0*cm, 1.8*cm, 2.3*cm, 2.4*cm, 2.1*cm, 2.2*cm, 2.0*cm, 2.0*cm])
         metrics_table.setStyle(TableStyle([
             ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#D6EAF8")),
             ("TEXTCOLOR", (0, 0), (-1, 0), colors.HexColor("#1B4F72")),
@@ -519,7 +526,7 @@ def generate_clinical_pdf(json_file, patient_info=None):
             ("ALIGN", (0, 0), (-1, -1), "CENTER"),
             ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
             ("BACKGROUND", (0, 1), (-1, 1), colors.HexColor("#F8F9F9")),
-            ("FONTSIZE", (0, 0), (-1, -1), 9),
+            ("FONTSIZE", (0, 0), (-1, -1), 6.5),
         ]))
         
         story.append(metrics_table)
@@ -573,7 +580,7 @@ def generate_clinical_pdf(json_file, patient_info=None):
         
         basket_data = [[
             "Panier", "Distance", "Hauteur", "Côté",
-            "Balles attendues", "Correctes reçues", "Erreurs reçues",
+            "Balles attendues", "Balles reçues", "Correctes reçues", "Erreurs reçues",
             "Taux d'atteinte", "Pureté"
         ]]
         
@@ -603,6 +610,7 @@ def generate_clinical_pdf(json_file, patient_info=None):
                 "Hauteur": b.get("height"),
                 "Côté": b.get("side"),
                 "Balles attendues": expected_balls,
+                "Balles reçues": attempts,
                 "Correctes reçues": correct,
                 "Erreurs reçues": errors,
                 "Taux atteinte (%)": percent(target_reach_rate),
@@ -617,6 +625,7 @@ def generate_clinical_pdf(json_file, patient_info=None):
                 row_data["Hauteur"],
                 row_data["Côté"],
                 row_data["Balles attendues"],
+                row_data["Balles reçues"],
                 row_data["Correctes reçues"],
                 row_data["Erreurs reçues"],
                 f'{row_data["Taux atteinte (%)"]}%',
@@ -626,7 +635,7 @@ def generate_clinical_pdf(json_file, patient_info=None):
         basket_table = Table(
             basket_data,
             repeatRows=1,
-            colWidths=[1.6*cm, 1.4*cm, 1.4*cm, 1.3*cm, 1.8*cm, 1.8*cm, 1.7*cm, 1.8*cm, 1.4*cm]
+            colWidths=[1.35*cm, 1.2*cm, 1.2*cm, 1.15*cm, 1.55*cm, 1.45*cm, 1.55*cm, 1.45*cm, 1.55*cm, 1.25*cm]
         )
 
         basket_table.setStyle(TableStyle([
@@ -635,7 +644,7 @@ def generate_clinical_pdf(json_file, patient_info=None):
             ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
             ("ALIGN", (0, 0), (-1, -1), "CENTER"),
             ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-            ("FONTSIZE", (0, 0), (-1, -1), 6),
+            ("FONTSIZE", (0, 0), (-1, -1), 5.4),
         ]))
         
         story.append(basket_table)
@@ -733,7 +742,7 @@ def generate_clinical_pdf(json_file, patient_info=None):
     # Résultats par niveau
     story.append(Paragraph("Résultats par niveau", styles["Heading2"]))
 
-    level_table_data = [["Niveau", "Correctes", "Erreurs", "Manipulées", "Taux réussite", "Précision tri", "Taux réalisation", "Temps"]]
+    level_table_data = [["Niveau", "Correctes", "Erreurs", "Manipulées", "Taux réussite", "Précision tri", "Taux réalisation", "Accuracy", "Temps"]]
 
     for _, row in df_levels.iterrows():
         level_table_data.append([
@@ -744,6 +753,7 @@ def generate_clinical_pdf(json_file, patient_info=None):
             f'{row["Taux de réussite global (%)"]}%',
             f'{row["Précision de tri (%)"]}%',
             f'{row["Taux de réalisation (%)"]}%',
+            f'{row["Accuracy (%)"]}%',
             row["Temps"]
         ])
 
@@ -754,6 +764,7 @@ def generate_clinical_pdf(json_file, patient_info=None):
         ("GRID", (0, 0), (-1, -1), 1, colors.grey),
         ("ALIGN", (0, 0), (-1, -1), "CENTER"),
         ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+        ("FONTSIZE", (0, 0), (-1, -1), 7),
     ]))
 
     story.append(level_table)
