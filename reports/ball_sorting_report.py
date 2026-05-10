@@ -10,7 +10,7 @@ from reportlab.platypus import (
     SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak, Image
 )
 from reportlab.lib.units import cm
-
+from datetime import datetime
 
 def percent(x):
     return round(x * 100, 1)
@@ -42,6 +42,11 @@ def generate_clinical_pdf(json_file, patient_info=None):
 
     patient = data.get("patientName", "Inconnu")
     date = data.get("sessionDate", "Inconnue")
+    try:
+        parsed_date = datetime.strptime(date, "%d/%m/%Y %H:%M:%S")
+        formatted_date = parsed_date.strftime("%d/%m/%Y")
+    except:
+        formatted_date = date
 
     if patient_info is None:
         patient_info = {}
@@ -329,7 +334,7 @@ def generate_clinical_pdf(json_file, patient_info=None):
     logo_app_path = os.path.join("assets", "Logo-APP.png")
     logo_enp_path = os.path.join("assets", "Logo-ENP.png")
 
-    left_logo = Image(logo_app_path, width=3*cm, height=3*cm) if os.path.exists(logo_app_path) else Paragraph("RehabXR", styles["Heading2"])
+    left_logo = Image(logo_app_path, width=3*cm, height=3*cm) if os.path.exists(logo_app_path) else Paragraph("PhoeniXR", styles["Heading2"])
     right_logo = Image(logo_enp_path, width=3*cm, height=3*cm) if os.path.exists(logo_enp_path) else Paragraph("ENP", styles["Heading2"])
 
     header_table = Table(
@@ -359,7 +364,7 @@ def generate_clinical_pdf(json_file, patient_info=None):
     ["Patient", full_patient_name],
     ["Date de naissance", patient_birthdate],
     ["Thérapeute", therapist_name],
-    ["Date de session", date],
+    ["Date de session", formatted_date],
     ]
     
     cover_table = Table(cover_data, colWidths=[5*cm, 10*cm])
@@ -407,10 +412,22 @@ def generate_clinical_pdf(json_file, patient_info=None):
 
     # Synthèse clinique
     story.append(Paragraph("Synthèse clinique", styles["Heading2"]))
+    
+    total_balls = 0
+    
+    for lvl in levels:
+        for c in lvl.get("colorStats", []):
+            total_balls += c.get("totalBalls", 0)
 
     summary_data = [
         ["Correct", "Erreurs", "Balles manipulées", "Temps total", "Accuracy"],
-        [total_correct, total_errors, total_manipulated, seconds_to_min_sec(total_time), f"{total_accuracy}%"]
+        [
+            f"{total_correct} / {total_manipulated}",
+            f"{total_errors} / {total_manipulated}",
+            f"{total_manipulated} / {total_balls}",
+            seconds_to_min_sec(total_time),
+            f"{total_accuracy}%"
+        ]
     ]
 
     summary_table = Table(summary_data, colWidths=[3*cm, 3*cm, 4*cm, 3*cm, 3*cm])
