@@ -389,29 +389,7 @@ def generate_clinical_pdf(json_file, patient_info=None):
     story.append(PageBreak())
 
 
-    # =========================
-    # IMAGES DES NIVEAUX
-    # =========================
-
-    level1_img = os.path.join("assets", "level1-BallSorting.png")
-    level2_img = os.path.join("assets", "level2-BallSorting.png")
-    level3_img = os.path.join("assets", "level3-BallSorting.png")
-
-    story.append(Paragraph("Aperçu des exercices", styles["Heading2"]))
-    story.append(Spacer(1, 10))
-
-    for title, img_path in [
-        ("Niveau 1 - Tri simple", level1_img),
-        ("Niveau 2 - Avec contrainte temporelle", level2_img),
-        ("Niveau 3 - Mémoire", level3_img),
-    ]:
-    
-        if os.path.exists(img_path):
-            story.append(Paragraph(title, styles["Heading3"]))
-            story.append(Image(img_path, width=15*cm, height=8*cm))
-            story.append(Spacer(1, 14))
-
-    story.append(PageBreak())
+   
 
 
 
@@ -444,9 +422,216 @@ def generate_clinical_pdf(json_file, patient_info=None):
         ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
         ("BACKGROUND", (0, 1), (-1, 1), colors.HexColor("#F8F9F9")),
     ]))
-
+    
     story.append(summary_table)
     story.append(Spacer(1, 20))
+    story.append(PageBreak())
+    
+    # =========================
+    # RÉSULTATS DÉTAILLÉS PAR NIVEAU
+    # =========================
+
+    level_images = {
+        1: os.path.join("assets", "level1-BallSorting.png"),
+        2: os.path.join("assets", "level2-BallSorting.png"),
+        3: os.path.join("assets", "level3-BallSorting.png"),
+    }
+    
+    level_titles = {
+        1: "Niveau 1 - Tri simple",
+        2: "Niveau 2 - Avec contrainte temporelle",
+        3: "Niveau 3 - Mémoire",
+    }
+    
+    level_objectives = {
+        1: "Objectif : évaluer la précision motrice de base, la coordination œil-main et la capacité à associer chaque balle à la couleur correspondante.",
+        2: "Objectif : évaluer la précision du tri sous contrainte temporelle, ainsi que la capacité du patient à maintenir sa performance avec une limite de temps.",
+        3: "Objectif : solliciter la mémoire de travail, l'attention visuelle et la coordination motrice lors d'un tri nécessitant une mémorisation temporaire des couleurs.",
+    }
+    
+    story.append(Paragraph("Résultats détaillés par niveau", styles["Heading2"]))
+    story.append(Spacer(1, 12))
+    
+    for i, lvl in enumerate(levels):
+        level_label = level_labels_for_stats[i]
+        level_num = lvl.get("level")
+        
+        story.append(Paragraph(level_titles.get(level_num, level_label), styles["Heading2"]))
+        story.append(Spacer(1, 8))
+        
+        img_path = level_images.get(level_num)
+        if img_path and os.path.exists(img_path):
+            story.append(Image(img_path, width=15*cm, height=8*cm))
+            story.append(Spacer(1, 12))
+            
+        story.append(Paragraph(level_objectives.get(level_num, ""), styles["Normal"]))
+        story.append(Spacer(1, 12))
+
+        lvl_correct = lvl.get("correct", 0)
+        lvl_errors = lvl.get("errors", 0)
+        lvl_manipulated = lvl.get("manipulated", 0)
+        lvl_time = lvl.get("time", 0)
+        lvl_accuracy = percent(lvl.get("accuracy", 0))
+        
+        lvl_total_balls = 0
+        for c in lvl.get("colorStats", []):
+            lvl_total_balls += c.get("totalBalls", 0)
+            
+        metrics_data = [
+            ["Correct", "Erreurs", "Balles manipulées", "Temps", "Accuracy"],
+            [
+                f"{lvl_correct} / {lvl_manipulated}",
+                f"{lvl_errors} / {lvl_manipulated}",
+                f"{lvl_manipulated} / {lvl_total_balls}",
+                seconds_to_min_sec(lvl_time),
+                f"{lvl_accuracy}%"
+            ]
+        ]
+        
+        metrics_table = Table(metrics_data, colWidths=[3*cm, 3*cm, 4*cm, 3*cm, 3*cm])
+        metrics_table.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#D6EAF8")),
+            ("TEXTCOLOR", (0, 0), (-1, 0), colors.HexColor("#1B4F72")),
+            ("GRID", (0, 0), (-1, -1), 0.8, colors.grey),
+            ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("BACKGROUND", (0, 1), (-1, 1), colors.HexColor("#F8F9F9")),
+            ("FONTSIZE", (0, 0), (-1, -1), 9),
+        ]))
+        
+        story.append(metrics_table)
+        story.append(Spacer(1, 16))
+        
+        # Statistiques par couleur du niveau
+        story.append(Paragraph("Statistiques par couleur", styles["Heading3"]))
+
+        color_data = [["Couleur", "Total", "Correct", "Erreurs", "Accuracy"]]
+        
+        for c in lvl.get("colorStats", []):
+            total = c.get("totalBalls", 0)
+            correct = c.get("correct", 0)
+            errors = c.get("errors", 0)
+            acc = correct / total if total > 0 else 0
+            
+            color_data.append([
+                c.get("color"),
+                total,
+                correct,
+                errors,
+                f"{percent(acc)}%"
+            ])
+            
+        color_table = Table(color_data, repeatRows=1)
+        color_table.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#D5F5E3")),
+            ("TEXTCOLOR", (0, 0), (-1, 0), colors.HexColor("#145A32")),
+            ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
+            ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("FONTSIZE", (0, 0), (-1, -1), 8),
+        ]))
+
+        story.append(color_table)
+        story.append(Spacer(1, 14))
+
+        # Statistiques par panier du niveau
+        story.append(Paragraph("Statistiques par panier", styles["Heading3"]))
+        
+        basket_data = [["Panier", "Distance", "Hauteur", "Côté", "Tent.", "Correct", "Err.", "Acc."]]
+        
+        basket_level_rows = []
+        
+        for b in lvl.get("basketStats", []):
+            attempts = b.get("attempts", 0)
+            correct = b.get("correct", 0)
+            errors = b.get("errors", 0)
+            acc = correct / attempts if attempts > 0 else 0
+            error_rate = errors / attempts if attempts > 0 else 0
+
+            row_data = {
+                "Panier": b.get("basketColor"),
+                "Distance": b.get("distance"),
+                "Hauteur": b.get("height"),
+                "Côté": b.get("side"),
+                "Tentatives": attempts,
+                "Correct": correct,
+                "Erreurs": errors,
+                "Accuracy (%)": percent(acc),
+                "Taux erreur (%)": percent(error_rate),
+            }
+
+            basket_level_rows.append(row_data)
+            
+            basket_data.append([
+                row_data["Panier"],
+                row_data["Distance"],
+                row_data["Hauteur"],
+                row_data["Côté"],
+                row_data["Tentatives"],
+                row_data["Correct"],
+                row_data["Erreurs"],
+                f'{row_data["Accuracy (%)"]}%'
+            ])
+            
+        basket_table = Table(basket_data, repeatRows=1)
+        basket_table.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#FADBD8")),
+            ("TEXTCOLOR", (0, 0), (-1, 0), colors.HexColor("#922B21")),
+            ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
+            ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("FONTSIZE", (0, 0), (-1, -1), 7),
+        ]))
+        
+        story.append(basket_table)
+        story.append(Spacer(1, 14))
+
+        # Interprétation automatique du niveau
+        story.append(Paragraph("Interprétation du niveau", styles["Heading3"]))
+        
+        if len(basket_level_rows) > 0:
+            df_level_baskets = pd.DataFrame(basket_level_rows)
+            
+            worst_basket = df_level_baskets.sort_values(
+                ["Accuracy (%)", "Taux erreur (%)"],
+                ascending=[True, False]
+            ).iloc[0]
+            
+            best_basket = df_level_baskets.sort_values(
+                ["Accuracy (%)", "Taux erreur (%)"],
+                ascending=[False, True]
+            ).iloc[0]
+            
+            if worst_basket["Accuracy (%)"] == 100:
+                story.append(Paragraph(
+                    "• Tous les paniers ont été réussis avec une précision de 100 %. Aucun panier ne présente de difficulté particulière sur ce niveau.",
+                    styles["Normal"]
+            ))
+            else:
+                story.append(Paragraph(
+                    f"• Le panier {worst_basket['Panier']}, situé à distance {worst_basket['Distance']}, "
+                    f"à hauteur {worst_basket['Hauteur']} et du côté {worst_basket['Côté']}, "
+                    f"a présenté la plus grande difficulté du niveau avec {worst_basket['Accuracy (%)']}% de réussite "
+                    f"et {worst_basket['Erreurs']} erreur(s) sur {worst_basket['Tentatives']} tentative(s).",
+                    styles["Normal"]
+                ))
+
+                story.append(Spacer(1, 6))
+                
+                story.append(Paragraph(
+                    f"• Le panier {best_basket['Panier']} a été le mieux réussi avec {best_basket['Accuracy (%)']}% de réussite "
+                    f"sur {best_basket['Tentatives']} tentative(s).",
+                    styles["Normal"]
+                ))
+
+        story.append(PageBreak())
+        
+    # =========================
+    # ANALYSE GLOBALE
+    # =========================
+
+    story.append(Paragraph("Analyse globale", styles["Heading2"]))
+    story.append(Spacer(1, 12))
 
     # Graphes principaux
     story.append(Paragraph("Graphiques principaux", styles["Heading2"]))
@@ -501,64 +686,7 @@ def generate_clinical_pdf(json_file, patient_info=None):
 
     story.append(PageBreak())
 
-    # Stats couleur
-    story.append(Paragraph("Statistiques par couleur", styles["Heading2"]))
-
-    color_table_data = [["Niveau", "Couleur", "Total", "Correct", "Erreurs", "Accuracy"]]
-
-    for _, row in df_colors.iterrows():
-        color_table_data.append([
-            row["Niveau"],
-            row["Couleur"],
-            row["Total balles"],
-            row["Correct"],
-            row["Erreurs"],
-            f'{row["Accuracy (%)"]}%'
-        ])
-
-    color_table = Table(color_table_data, repeatRows=1)
-    color_table.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#D5F5E3")),
-        ("TEXTCOLOR", (0, 0), (-1, 0), colors.HexColor("#145A32")),
-        ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
-        ("ALIGN", (0, 0), (-1, -1), "CENTER"),
-        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-        ("FONTSIZE", (0, 0), (-1, -1), 8),
-    ]))
-
-    story.append(color_table)
-    story.append(PageBreak())
-
-    # Stats panier
-    story.append(Paragraph("Statistiques par panier", styles["Heading2"]))
-
-    basket_table_data = [["Niv", "Panier", "Distance", "Hauteur", "Côté", "Tent.", "Correct", "Err.", "Acc."]]
-
-    for _, row in df_baskets.iterrows():
-        basket_table_data.append([
-            row["Niveau"],
-            row["Panier"],
-            row["Distance"],
-            row["Hauteur"],
-            row["Côté"],
-            row["Tentatives"],
-            row["Correct"],
-            row["Erreurs"],
-            f'{row["Accuracy (%)"]}%'
-        ])
-
-    basket_table = Table(basket_table_data, repeatRows=1)
-    basket_table.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#FADBD8")),
-        ("TEXTCOLOR", (0, 0), (-1, 0), colors.HexColor("#922B21")),
-        ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
-        ("ALIGN", (0, 0), (-1, -1), "CENTER"),
-        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-        ("FONTSIZE", (0, 0), (-1, -1), 7),
-    ]))
-
-    story.append(basket_table)
-    story.append(PageBreak())
+    
 
     # Paniers difficiles
     story.append(Paragraph("Paniers difficiles détectés", styles["Heading2"]))
