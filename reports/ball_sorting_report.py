@@ -44,7 +44,7 @@ def generate_clinical_pdf(json_file, patient_info=None):
     date = data.get("sessionDate", "Inconnue")
     try:
         parsed_date = datetime.strptime(date, "%d/%m/%Y %H:%M:%S")
-        formatted_date = parsed_date.strftime("%d/%m/%Y")
+        formatted_date = parsed_date.strftime("%d/%m/%Y %H:%M:%S")
     except:
         formatted_date = date
 
@@ -54,6 +54,11 @@ def generate_clinical_pdf(json_file, patient_info=None):
     patient_lastname = patient_info.get("lastname", "")
     patient_firstname = patient_info.get("firstname", "")
     patient_birthdate = patient_info.get("birthdate", "")
+    try:
+        birthdate_obj = datetime.strptime(patient_birthdate, "%Y-%m-%d")
+        patient_birthdate = birthdate_obj.strftime("%d-%m-%Y")
+    except:
+        pass
     therapist_name = patient_info.get("therapist", "")
     
     full_patient_name = f"{patient_firstname} {patient_lastname}".strip()
