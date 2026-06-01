@@ -2068,11 +2068,6 @@
                     <span id="filename-ball">—</span>
                 </div>
 
-                <button class="clear-btn" onclick="clearForm('ball')" type="button">
-                    <span>🧹</span>
-                    <span data-lang="fr">Réinitialiser</span>
-                    <span data-lang="en">Clear</span>
-                </button>
 
                 <button class="generate-btn ball-btn" id="btn-ball" disabled onclick="generateReport('ball')">
                     <span>⚡</span>
@@ -2304,6 +2299,10 @@
     window.URL.revokeObjectURL(url);
 
     btn.innerHTML = `<span>✅</span> <span>${currentLang === 'fr' ? 'Rapport généré !' : 'Report generated!'}</span>`;
+
+    setTimeout(() => {
+        clearForm(appType);
+    }, 1200);
 
     setTimeout(() => {
       btn.disabled = false;
