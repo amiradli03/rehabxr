@@ -670,6 +670,94 @@
             z-index: 2;
         }
 
+        .presentation-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            margin-top: 40px;
+        }
+
+        .presentation-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 24px; 
+            padding: 30px; 
+            text-align: left; 
+            cursor: pointer; 
+            color: var(--text); 
+            font-family: 'Sora', sans-serif; 
+            transition: all 0.3s ease;
+        }
+        
+        .presentation-card:hover {
+            transform: translateY(-6px);
+            border-color: var(--accent);
+            box-shadow: 0 22px 55px rgba(0, 194, 255, 0.14);
+        }
+        
+        .presentation-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 20px;
+            background: rgba(0, 194, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            margin-bottom: 18px;
+        }
+        
+        .presentation-card h3 {
+            color: var(--white);
+            font-size: 21px;
+            margin-bottom: 12px;
+        }
+        
+        .presentation-card p {
+            color: var(--text2);
+            font-size: 14px;
+            line-height: 1.7;
+        }
+        
+        .presentation-modal {
+            max-width: 900px;
+        }
+        
+        .presentation-content {
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+        
+        .presentation-content h3 {
+            color: var(--accent);
+            margin-top: 20px;
+            margin-bottom: 10px;
+            font-size: 19px;
+        }
+        
+        .presentation-content p,
+        .presentation-content li {
+            color: var(--text2);
+            line-height: 1.8;
+            font-size: 15px;
+        }
+        
+        .presentation-content ul {
+            padding-left: 22px;
+        }
+        
+        @media (max-width: 900px) {
+            .presentation-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+
+
+
+
+
+
         .status-active {
             background: rgba(16,185,129,0.15);
             color: var(--accent3);
@@ -1444,6 +1532,66 @@
         </div>
     </section>
 
+
+    <!-- EXERCISE PRESENTATIONS -->
+    <section class="section presentations-section" id="presentations">
+        <div class="section-header">
+            <div class="section-tag">
+                <span data-lang="fr">Présentation des exercices</span>
+                <span data-lang="en">Exercise Overview</span>
+            </div>
+
+            <h2 class="section-title">
+                <span data-lang="fr">Comprendre chaque application avant de générer un rapport</span>
+                <span data-lang="en">Understand each application before generating a report</span>
+            </h2>
+
+            <p class="section-desc">
+                <span data-lang="fr">
+                    Cette section permet au thérapeute de consulter le principe, les objectifs cliniques et les niveaux de chaque application de rééducation.
+                </span>
+                <span data-lang="en">
+                    This section allows the therapist to review the principle, clinical objectives and levels of each rehabilitation application.
+                </span>
+            </p>
+        </div>
+
+        <div class="presentation-grid">
+
+            <button class="presentation-card" onclick="openPresentationModal('ball')">
+                <div class="presentation-icon">🎯</div>
+                <h3>Ball Sorting Game</h3>
+                <p>
+                    <span data-lang="fr">Tri de balles colorées, coordination œil-main et précision motrice.</span>
+                    <span data-lang="en">Colored ball sorting, hand-eye coordination and motor precision.</span>
+                </p>
+            </button>
+
+            <button class="presentation-card" onclick="openPresentationModal('card')">
+                <div class="presentation-icon">🃏</div>
+                <h3>Card Sorting Game</h3>
+                <p>
+                    <span data-lang="fr">Tri de cartes, mémoire visuelle et reconnaissance cognitive.</span>
+                    <span data-lang="en">Card sorting, visual memory and cognitive recognition.</span>
+                </p>
+            </button>
+
+            <button class="presentation-card" onclick="openPresentationModal('puzzle')">
+                <div class="presentation-icon">🧩</div>
+                <h3>3D Puzzle</h3>
+                <p>
+                    <span data-lang="fr">Manipulation 3D, planification motrice et résolution spatiale.</span>
+                    <span data-lang="en">3D manipulation, motor planning and spatial problem solving.</span>
+                </p>
+            </button>
+
+        </div>
+    </section>
+
+
+
+
+
     <!-- APPS -->
     <section class="section apps-section" id="apps">
         <div class="section-header">
@@ -1790,6 +1938,84 @@
         <p class="footer-copy">© 2026 PhoeniXR · ENP Alger · <span data-lang="fr">Tous droits réservés</span><span data-lang="en">All rights reserved</span></p>
     </footer>
 
+
+
+
+    <!-- PRESENTATION MODAL BALL SORTING -->
+    <div class="modal-overlay" id="presentation-modal-ball">
+        <div class="modal presentation-modal">
+            <div class="modal-header">
+                <div>
+                    <div class="modal-app-badge badge-ball">🎯 Ball Sorting Game</div>
+                    <h2 class="modal-title">
+                        <span data-lang="fr">Présentation de l’exercice</span>
+                        <span data-lang="en">Exercise Presentation</span>
+                    </h2>
+                </div>
+                <button class="modal-close" onclick="closePresentationModal('ball')">✕</button>
+            </div>
+            
+            <div class="modal-body presentation-content">
+                
+                <h3>
+                    <span data-lang="fr">Objectif général</span>
+                    <span data-lang="en">General objective</span>
+                </h3>
+
+                <p>
+                    <span data-lang="fr">
+                        Le Ball Sorting Game est un exercice de rééducation fonctionnelle en réalité mixte destiné à travailler la coordination œil-main, la précision motrice, la préhension, le contrôle du membre supérieur et la reconnaissance des couleurs.
+                    </span>
+                    <span data-lang="en">
+                        The Ball Sorting Game is a mixed reality functional rehabilitation exercise designed to train hand-eye coordination, motor precision, grasping, upper-limb control and color recognition.
+                    </span>
+                </p>
+
+                <h3>
+                    <span data-lang="fr">Organisation des niveaux</span>
+                    <span data-lang="en">Level organization</span>
+                </h3>
+
+                <p>
+                    <span data-lang="fr">
+                        L’exercice est organisé en trois niveaux progressifs. Le premier niveau repose sur un tri simple des balles. Le deuxième introduit une contrainte temporelle afin d’évaluer la performance sous pression. Le troisième sollicite davantage la mémoire de travail, car le patient doit mémoriser la couleur de la balle avant son placement.
+                    </span>
+                    <span data-lang="en">
+                        The exercise is organized into three progressive levels. The first level is based on simple ball sorting. The second introduces a time constraint to evaluate performance under pressure. The third further involves working memory, as the patient must memorize the ball color before placing it.
+                    </span>
+                </p>
+
+                <h3>
+                    <span data-lang="fr">Intérêt clinique</span>
+                    <span data-lang="en">Clinical relevance</span>
+                </h3>
+
+                <ul>
+                    <li>
+                        <span data-lang="fr">Évaluation de la précision du geste et du contrôle moteur.</span>
+                        <span data-lang="en">Assessment of gesture precision and motor control.</span>
+                    </li>
+                    <li>
+                        <span data-lang="fr">Analyse des erreurs de tri par couleur et par panier.</span>
+                        <span data-lang="en">Analysis of sorting errors by color and by basket.</span>
+                    </li>
+                    <li>
+                        <span data-lang="fr">Observation de la capacité du patient à atteindre différentes positions dans l’espace.</span>
+                        <span data-lang="en">Observation of the patient's ability to reach different positions in space.</span>
+                    </li>
+                    <li>
+                        <span data-lang="fr">Génération automatique d’un rapport clinique structuré à partir des données JSON.</span>
+                        <span data-lang="en">Automatic generation of a structured clinical report from JSON data.</span>
+                    </li>
+                </ul>
+
+            </div>
+        </div>
+    </div>
+
+
+
+
     <!-- MODAL BALL SORTING -->
     <div class="modal-overlay" id="modal-ball">
         <div class="modal">
@@ -1937,6 +2163,20 @@
       }
     });
   }
+
+
+  // ===== PRESENTATION MODALS =====
+  function openPresentationModal(type) {
+    document.getElementById(`presentation-modal-${type}`).classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closePresentationModal(type) {
+    document.getElementById(`presentation-modal-${type}`).classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+
 
   // ===== MODAL =====
   function openModal(type) {
