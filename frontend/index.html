@@ -1437,6 +1437,20 @@
             }
         }
 
+        .input-group {
+            width: 100%;
+        }
+        
+        .input-label {
+            display: block;
+            color: var(--text2);
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            font-family: 'Sora', sans-serif;
+        }
+
+
         /* ===== HIDDEN LANG ===== */
         [data-lang] {
             display: none;
@@ -2044,8 +2058,16 @@
                     <input id="patient-firstname-ball" type="text" placeholder="Prénom du patient"
                     style="padding:14px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-family:'Sora',sans-serif;">
                     
-                    <input id="patient-birthdate-ball" type="date"
-                    style="padding:14px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-family:'Sora',sans-serif;">
+                    <div class="input-group">
+                        <label class="input-label" for="patient-birthdate-ball">
+                            <span data-lang="fr">Entrez la date de naissance du patient</span>
+                            <span data-lang="en">Enter the patient's date of birth</span>
+                        </label>
+                        
+                        <input id="patient-birthdate-ball" type="date"
+                            style="width:100%;padding:14px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-family:'Sora',sans-serif;">
+                    </div>
+                    // style="padding:14px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-family:'Sora',sans-serif;">
                     
                     <input id="therapist-name-ball" type="text" placeholder="Nom du thérapeute"
                     style="padding:14px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-family:'Sora',sans-serif;">
