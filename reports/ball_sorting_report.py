@@ -638,6 +638,48 @@ def generate_clinical_pdf(json_file, patient_info=None, output_dir=None):
     df_height = aggregate_motor(df_baskets, "Hauteur")
     df_side = aggregate_motor(df_baskets, "Côté")
 
+
+    motor_conclusions = []
+    
+    if not df_distance.empty:
+        worst_distance = df_distance.sort_values(
+            ["Taux atteinte (%)", "Purete (%)", "Taux erreur (%)"],
+            ascending=[True, True, False]
+        ).iloc[0]
+        
+        motor_conclusions.append(
+            f"La distance la plus difficile est {worst_distance['Distance']} : "
+            f"taux d'atteinte {worst_distance['Taux atteinte (%)']}%, "
+            f"pureté {worst_distance['Purete (%)']}%, "
+            f"taux d'erreur {worst_distance['Taux erreur (%)']}%."
+        )
+        
+    if not df_height.empty:
+        worst_height = df_height.sort_values(
+            ["Taux atteinte (%)", "Purete (%)", "Taux erreur (%)"],
+            ascending=[True, True, False]
+        ).iloc[0]
+        
+        motor_conclusions.append(
+            f"La hauteur la plus difficile est {worst_height['Hauteur']} : "
+            f"taux d'atteinte {worst_height['Taux atteinte (%)']}%, "
+            f"pureté {worst_height['Purete (%)']}%, "
+            f"taux d'erreur {worst_height['Taux erreur (%)']}%."
+        )
+        
+    if not df_side.empty:
+        worst_side = df_side.sort_values(
+            ["Taux atteinte (%)", "Purete (%)", "Taux erreur (%)"],
+            ascending=[True, True, False]
+        ).iloc[0]
+        
+        motor_conclusions.append(
+            f"Le côté le plus difficile est {worst_side['Côté']} : "
+            f"taux d'atteinte {worst_side['Taux atteinte (%)']}%, "
+            f"pureté {worst_side['Purete (%)']}%, "
+            f"taux d'erreur {worst_side['Taux erreur (%)']}%."
+        )
+
     df_color_global = df_colors.groupby("Couleur")[["Disponibles", "Manipulees", "Non manipulees", "Correctes", "Erreurs"]].sum().reset_index() if not df_colors.empty else pd.DataFrame()
     if not df_color_global.empty:
         df_color_global["Reussite globale (%)"] = (df_color_global["Correctes"] / df_color_global["Disponibles"].replace(0, pd.NA) * 100).fillna(0).round(1)
@@ -903,9 +945,7 @@ def generate_clinical_pdf(json_file, patient_info=None, output_dir=None):
                     else:
                         story.append(Paragraph("- Aucun panier n'a reçu de balle de mauvaise couleur sur ce niveau.", styles["BulletSmall"]))
 
-            story.append(Spacer(1, 10))
-            story.append(HRFlowable(width="100%", thickness=0.4, color=colors.HexColor("#D5DBDB")))
-            story.append(Spacer(1, 8))
+            story.append(PageBreak())
 
         story.append(PageBreak())
 
@@ -964,6 +1004,15 @@ def generate_clinical_pdf(json_file, patient_info=None, output_dir=None):
             if chart_key in chart_paths and os.path.exists(chart_paths[chart_key]):
                 story.append(Image(chart_paths[chart_key], width=15.6 * cm, height=8.3 * cm))
                 story.append(Spacer(1, 10))
+
+            if motor_conclusions:
+                story.append(Spacer(1, 10))
+                story.append(Paragraph("Conclusion motrice spatiale", styles["SubTitle"]))
+                
+                for conclusion in motor_conclusions:
+                    story.append(Paragraph(f"- {conclusion}", styles["BulletSmall"]))
+
+                    
         story.append(PageBreak())
 
         # Attention baskets
