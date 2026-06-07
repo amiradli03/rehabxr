@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, File, Form, Request
+from fastapi import FastAPI, UploadFile, File, Form, Request, HTTPException
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -8,7 +8,7 @@ import json
 
 
 from reports.ball_sorting_report import generate_clinical_pdf
-
+from reports.puzzle_3d_report import generate_assembly_stacking_pdf
 
 
 
@@ -44,7 +44,7 @@ async def check_login(request: Request):
     data = await request.json()
     if data.get("password") == PASSWORD:
         return {"status": "ok"}
-    return {"status": "error"}, 401
+    raise HTTPException(status_code=401, detail="Mot de passe incorrect")
 
 
 @app.get("/app", response_class=HTMLResponse)
@@ -77,3 +77,39 @@ async def generate_ball_report(
     pdf_path = generate_clinical_pdf(open(file_path, "rb"), patient_info)
 
     return FileResponse(pdf_path, filename=os.path.basename(pdf_path))
+
+
+
+
+
+
+@app.post("/generate/puzzle")
+async def generate_puzzle_report(
+    file: UploadFile = File(...),
+    patient_lastname: str = Form(""),
+    patient_firstname: str = Form(""),
+    patient_birthdate: str = Form(""),
+    therapist_name: str = Form("")
+):
+    file_path = os.path.join(UPLOAD_DIR, file.filename)
+
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    patient_info = {
+        "lastname": patient_lastname,
+        "firstname": patient_firstname,
+        "birthdate": patient_birthdate,
+        "therapist": therapist_name
+    }
+
+    pdf_path = generate_assembly_stacking_pdf(
+        file_path,
+        patient_info=patient_info,
+        output_dir=OUTPUT_DIR
+    )
+
+    return FileResponse(
+        pdf_path,
+        filename=os.path.basename(pdf_path)
+    )
