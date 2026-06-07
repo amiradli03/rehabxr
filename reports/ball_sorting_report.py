@@ -944,10 +944,8 @@ def generate_clinical_pdf(json_file, patient_info=None, output_dir=None):
                         ))
                     else:
                         story.append(Paragraph("- Aucun panier n'a reçu de balle de mauvaise couleur sur ce niveau.", styles["BulletSmall"]))
-
+                        
             story.append(PageBreak())
-
-        story.append(PageBreak())
 
         # Global visual analysis
         story.append(Paragraph("3. Analyse graphique globale", styles["SectionTitle"]))
@@ -1004,15 +1002,15 @@ def generate_clinical_pdf(json_file, patient_info=None, output_dir=None):
             if chart_key in chart_paths and os.path.exists(chart_paths[chart_key]):
                 story.append(Image(chart_paths[chart_key], width=15.6 * cm, height=8.3 * cm))
                 story.append(Spacer(1, 10))
-
-            if motor_conclusions:
-                story.append(Spacer(1, 10))
-                story.append(Paragraph("Conclusion motrice spatiale", styles["SubTitle"]))
                 
-                for conclusion in motor_conclusions:
-                    story.append(Paragraph(f"- {conclusion}", styles["BulletSmall"]))
+        if motor_conclusions:
+            story.append(Spacer(1, 10))
+            story.append(Paragraph("Conclusion motrice spatiale", styles["SubTitle"]))
+                
+            for conclusion in motor_conclusions:
+                story.append(Paragraph(f"- {conclusion}", styles["BulletSmall"]))
 
-                    
+
         story.append(PageBreak())
 
         # Attention baskets
