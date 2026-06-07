@@ -825,16 +825,125 @@ def generate_clinical_pdf(json_file, patient_info=None, output_dir=None):
         ]
         story.append(kpi_table(kpis, styles, columns=4))
         story.append(Spacer(1, 12))
+
         story.append(Paragraph("Lecture des indicateurs", styles["SubTitle"]))
-        metric_definitions = [
-            "Réussite globale = balles correctes / balles disponibles. Elle tient compte des balles non réalisées.",
-            "Précision de tri = balles correctes / balles manipulées. Elle correspond à la qualité du tri parmi les balles effectivement traitées.",
-            "Réalisation = balles manipulées / balles disponibles. Elle mesure l'avancement complet de la tâche.",
-            "Pureté d'un panier = balles correctes reçues / total des balles reçues par ce panier.",
+        
+        indicator_header_style = ParagraphStyle(
+            name="IndicatorHeaderStyle",
+            parent=styles["Small"],
+            fontName="Helvetica-Bold",
+            fontSize=7.2,
+            leading=8.5,
+            alignment=TA_CENTER,
+            textColor=colors.white,
+        )
+        
+        indicator_cell_style = ParagraphStyle(
+            name="IndicatorCellStyle",
+            parent=styles["Small"],
+            fontSize=7.1,
+            leading=8.6,
+            alignment=TA_LEFT,
+        )
+
+        indicator_formula_style = ParagraphStyle(
+            name="IndicatorFormulaStyle",
+            parent=styles["Small"],
+            fontName="Helvetica-Bold",
+            fontSize=7.1,
+            leading=8.6,
+            alignment=TA_CENTER,
+            textColor=colors.HexColor(PALETTE["primary"]),
+        )
+        
+        indicator_data = [
+            [
+                Paragraph("Indicateur", indicator_header_style),
+                Paragraph("Formule", indicator_header_style),
+                Paragraph("Interprétation pour le patient et le thérapeute", indicator_header_style),
+            ],
+            [
+                Paragraph("Réussite globale", indicator_cell_style),
+                Paragraph("Balles correctes<br/>──────────────<br/>Balles disponibles", indicator_formula_style),
+                Paragraph(
+                    "Indique la performance complète du patient sur l'ensemble de la tâche. "
+                    "Pour le thérapeute, cet indicateur permet d'évaluer le résultat global, car il tient compte à la fois des erreurs et des balles non réalisées.",
+                    indicator_cell_style
+                ),
+            ],
+            [
+                Paragraph("Précision de tri", indicator_cell_style),
+                Paragraph("Balles correctes<br/>──────────────<br/>Balles manipulées", indicator_formula_style),
+                Paragraph(
+                    "Mesure la qualité du tri uniquement sur les balles réellement traitées. "
+                    "Pour le patient, une bonne précision signifie que les objets manipulés sont généralement placés au bon endroit. "
+                    "Pour le thérapeute, cela permet de distinguer une erreur de tri d'une tâche simplement non terminée.",
+                    indicator_cell_style
+                ),
+            ],
+            [
+                Paragraph("Taux de réalisation", indicator_cell_style),
+                Paragraph("Balles manipulées<br/>──────────────<br/>Balles disponibles", indicator_formula_style),
+                Paragraph(
+                    "Mesure l'avancement de la tâche. "
+                    "Pour le patient, il montre la capacité à compléter l'exercice. "
+                    "Pour le thérapeute, un taux faible peut traduire une lenteur d'exécution, une fatigue, une hésitation ou une difficulté à atteindre certaines zones.",
+                    indicator_cell_style
+                ),
+            ],
+            [
+                Paragraph("Taux d'erreur", indicator_cell_style),
+                Paragraph("Balles incorrectes<br/>──────────────<br/>Balles manipulées", indicator_formula_style),
+                Paragraph(
+                    "Indique la proportion de placements incorrects parmi les balles manipulées. "
+                    "Pour le thérapeute, il aide à repérer les confusions de couleurs, les erreurs attentionnelles ou les difficultés de contrôle du geste.",
+                    indicator_cell_style
+                ),
+            ],
+            [
+                Paragraph("Taux d'atteinte d'un panier", indicator_cell_style),
+                Paragraph("Bonnes balles reçues<br/>──────────────<br/>Balles attendues", indicator_formula_style),
+                Paragraph(
+                    "Évalue si une cible spatiale a été suffisamment atteinte. "
+                    "Même si les balles reçues sont correctes, un taux d'atteinte faible signifie que le panier n'a pas reçu toutes les balles attendues. "
+                    "Cet indicateur est utile pour analyser les difficultés liées à la distance, à la hauteur ou au côté du panier.",
+                    indicator_cell_style
+                ),
+            ],
+            [
+                Paragraph("Pureté d'un panier", indicator_cell_style),
+                Paragraph("Bonnes balles reçues<br/>──────────────<br/>Total des balles reçues", indicator_formula_style),
+                Paragraph(
+                    "Mesure la qualité du contenu d'un panier. "
+                    "Une pureté élevée signifie que le panier a reçu principalement la bonne couleur. "
+                    "Une pureté faible indique que le panier a été pollué par des balles de mauvaise couleur.",
+                    indicator_cell_style
+                ),
+            ],
         ]
-        for item in metric_definitions:
-            story.append(Paragraph(f"- {item}", styles["BulletSmall"]))
+        
+        indicator_table = Table(
+        indicator_data,
+        colWidths=[3.2 * cm, 4.2 * cm, 10.1 * cm],
+        repeatRows=1,
+        hAlign="CENTER"
+        )
+
+        indicator_table.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor(PALETTE["primary"])),
+            ("GRID", (0, 0), (-1, -1), 0.45, colors.HexColor("#BFC9CA")),
+            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+            ("BACKGROUND", (0, 1), (-1, -1), colors.white),
+            ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#F8F9F9")]),
+            ("TOPPADDING", (0, 0), (-1, -1), 5),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+            ("LEFTPADDING", (0, 0), (-1, -1), 4),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 4),
+        ]))
+
+        story.append(indicator_table)
         story.append(Spacer(1, 12))
+
 
         story.append(Paragraph("Interprétation automatique", styles["SubTitle"]))
         for note in clinical_notes:
