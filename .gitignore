@@ -1,7 +1,20 @@
+# Python virtual environment
+.venv/
+
+# Python cache
 __pycache__/
 *.pyc
 
+# Generated folders
 generated_reports/
 uploaded_json/
 
+# Generated PDF reports at project root
+rapport_clinique_*.pdf
+
+# Environment variables
 .env
+
+# System files
+.DS_Store
+Thumbs.db
